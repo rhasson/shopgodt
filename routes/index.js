@@ -1,10 +1,7 @@
 //routes
 var auth = require('../lib/auth').auth,  //handle authentication
 	items = require('../lib/items').items,  //handle access to items posted
-	db = require('../lib/db').db,
-	conf = require('../config/app_config').app_config;
-
-db.init(conf.db);
+	db = require('../lib/db').db;
 
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {
@@ -39,6 +36,7 @@ exports.auth = {
 		   3. if it is, update db with profile detail and return doc_id/rev
 		   4. call done() with doc_id/rev
 		*/
+		profile = profile._json;
 		var p = {
 			type: 'profile',
 			fb_id: profile.id,
