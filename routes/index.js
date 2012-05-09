@@ -1,7 +1,10 @@
 //routes
 var auth = require('../lib/auth').auth,  //handle authentication
 	items = require('../lib/items').items,  //handle access to items posted
-	db = require('../lib/db').db;
+	db = require('../lib/db').db,
+	conf = require('../config/app_config').app_config;
+
+db.init(app_config.db);
 
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {
@@ -36,19 +39,36 @@ exports.auth = {
 		   3. if it is, update db with profile detail and return doc_id/rev
 		   4. call done() with doc_id/rev
 		*/
+		var p = {
+			type: 'profile',
+			fb_id: profile.id,
+		    name: profile.name,
+		    first_name: profile.first_name,
+		    last_name: profile.last_name,
+		    fb_link: profile.link,
+		    birthday: profile.birthday,
+		    location: profile.location,
+		    gender: profile.gender,
+		    relationship_status: profile.relationship_status,
+		    email: profile.email,
+		    timezone: profile.timezone;,
+		    locale: profile.locale,
+		    fb_updated_time: profile.updated_time
+		};
+
 		db.view({
 			view: 'profiles/byFbId',
 			body: {key: profile.id}
 		}, function(err, doc) {
 			if (err) return done(err);
 			else if (doc.length  === 0) {
-				db.save({body: profile}, function(err2, newDoc) {
+				db.save({body: p}, function(err2, newDoc) {
 					if (err2) return done(err2);
 					else if (newDoc.ok) return done(null, newDoc.id+':'+newDoc.rev);
 				});
 			}
 			else if (doc.length > 0) {
-				db.update({body: profile}, function(err3, upDoc) {
+				db.update({body: p}, function(err3, upDoc) {
 					if (err3) return done(err3);
 					else if (upDoc.ok) return done(null, upDoc.id+':'+upDoc.rev);
 				});

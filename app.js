@@ -15,26 +15,29 @@ var app = module.exports = express.createServer();
 
 db.init(app_config.db);
 
-console.log(db);
-
 /* Passport and Facebook Connect Configuration */
 
 //handles serialization to store session state
 passport.serializeUser(function(user, done) {
-    db.save({body: user})
+  console.log('serialize: ', util.inspect(user, true, null));
+/*    db.save({body: user})
 
   cache.set(user, function(err, id){
     if (!err) done(null, id);
     else done(err);
-  });
+  });*/
+  return done(null, user);
 });
 
 //handles deserialization to retreive session state
 passport.deserializeUser(function(id, done) {
+  console.log('deserialize: ', util.inspect(id, true, null));
+/*  
   cache.get(id, function(err, user) {
     if(!err) done(null, user);
     else done(err);
-  });
+  });*/
+  return done(null, id);
 });
 
 passport.use(new FacebookStrategy({
