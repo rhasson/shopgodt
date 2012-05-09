@@ -15,6 +15,8 @@ var app = module.exports = express.createServer();
 
 db.init(app_config.db);
 
+console.log(db);
+
 /* Passport and Facebook Connect Configuration */
 
 //handles serialization to store session state
