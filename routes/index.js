@@ -57,19 +57,19 @@ exports.auth = {
 
 		db.view({
 			view: 'profiles/byFbId',
-			body: {key: profile.id}
+			body: {key: p.fb_id}
 		}, function(err, doc) {
 			if (err) return done(err);
 			else if (doc.length  === 0) {
 				db.save({body: p}, function(err2, newDoc) {
 					if (err2) return done(err2);
-					else if (newDoc.ok) return done(null, newDoc.id+':'+p.id);
+					else if (newDoc.ok) return done(null, newDoc.id+':'+p.fb_id);
 				});
 			}
 			else if (doc.length > 0) {
-				db.update({body: p}, function(err3, upDoc) {
+				db.update({id: doc[0].id, body: p}, function(err3, upDoc) {
 					if (err3) return done(err3);
-					else if (upDoc.ok) return done(null, upDoc.id+':'+p.id);
+					else if (upDoc.ok) return done(null, upDoc.id+':'+p.fb_id);
 				});
 			} else return done(new Error('Error with log in and registration process'));
 		});
