@@ -5,7 +5,8 @@ var auth = require('../lib/auth').auth,  //handle authentication
 
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {
-		items.all({body: {key: req.user.id}}, function(err, posts) {
+		var id = req.user.split(':')[1];
+		items.byFbId(id, function(err, posts) {
 			if (!err) {
 				res.render('index', {locals: {posts: posts}});
 			} else {
@@ -62,13 +63,13 @@ exports.auth = {
 			else if (doc.length  === 0) {
 				db.save({body: p}, function(err2, newDoc) {
 					if (err2) return done(err2);
-					else if (newDoc.ok) return done(null, newDoc.id+':'+newDoc.rev);
+					else if (newDoc.ok) return done(null, newDoc.id+':'+p.id);
 				});
 			}
 			else if (doc.length > 0) {
 				db.update({body: p}, function(err3, upDoc) {
 					if (err3) return done(err3);
-					else if (upDoc.ok) return done(null, upDoc.id+':'+upDoc.rev);
+					else if (upDoc.ok) return done(null, upDoc.id+':'+p.id);
 				});
 			} else return done(new Error('Error with log in and registration process'));
 		});
