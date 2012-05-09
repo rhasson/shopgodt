@@ -1,0 +1,57 @@
+div.hero-unit
+  div.row
+    div(class='span3 offset4')
+      h2 Register
+      form.form-vertical
+        fieldset
+          div.control-group
+            div.controls
+              input(type='text', class='span3', placeholder='first name',  name='firstname')
+          div.control-group
+            div.controls
+              input(type='text', class='span3', placeholder='last name',  name='lastname')
+          div.control-group
+            div.controls
+              input(type='text', class='span3', placeholder='login',  name='login')
+          div.control-group
+            div.controls
+              input(type='password', class='span3', placeholder='password',  name='password')
+          div.control-group
+            div.controls
+              input(type='submit', id='submit', class='span2 btn btn-primary', label='Register')
+
+script(type='text/javascript')
+  $("#submit").on("click", function(ev) {
+    ev.preventDefault();
+    
+    var fname = $("input[name='firstname']").val(),
+      lname = $("input[name='lastname']").val(),
+      name = $("input[name='login']").val(),
+      pass = $("input[name='password']").val();
+
+    pass = Crypto.MD5(pass);
+
+    $.post("/users", {
+      firstname: fname,
+      lastname: lname,
+      login: name,
+      password: pass
+    })
+    .error(function(x,s,e) {
+      console.log("failed to register", s);
+    })
+    .success(function(data,s,x) {
+      console.log(x);
+      try { var d = JSON.parse(data); }
+      catch (e) { console.log (e); d = {}; }
+      if ('error' in d) {		
+        var e = Object.keys(d.error);
+        for (i in e) {
+          var el = $("input[name='"+e[i]+"']").parent().parent();
+          el.addClass('error');
+        }
+      } else if ('redirect' in d) {
+        window.location.pathname = d.redirect;
+      }
+    });
+  });

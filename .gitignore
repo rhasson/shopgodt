@@ -1,0 +1,10 @@
+.log
+log/
+
+#OS Specific
+.DS_Store*
+Thumbs.db
+
+tmp/
+
+node_modules/

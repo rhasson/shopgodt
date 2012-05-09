@@ -1,0 +1,44 @@
+div
+  div.content.offset1
+    div.row
+      div.span8.alert.alert-info(data-toggle="collapse", data-target="#instructions")
+        div.row
+          div.span2
+            a#comp_it.btn.btn-large(onclick="alert('Drag me to the bookmarks bar'); return false;", href="javascript:void((function(){var e=document.createElement('script');e.setAttribute('type','text/javascript');e.setAttribute('charset','UTF-8');e.setAttribute('src','http://localhost:3000/js/pinlet.js');document.body.appendChild(e)})());") Compare It
+          div.span6.arrow  ←  Add this link to your Bookmarks Bar
+
+    div#instructions.row.collapse
+      div.span8
+        h3.center To install the "Compare It" button in Chrome:
+        ol
+          li Display your Bookmarks by clicking the <strong> Wrench Icon > Tools > Always Show Bookmarks Bar</strong>
+          li Drag the "Compare It" button to your Bookmarks bar
+          li When you are browsing the web, push the "Compare It" button to compare with your friends
+
+
+mixin thumb(item)
+  div.span3
+    div.thumbnail
+      img.thumb(src="#{item.img_url}", alt)
+      div.caption
+        h5 #{item.title}
+        p #{item.desc}
+        p #{item.tags}
+        p: a.btn Compare
+
+- var c = 0
+- if (posts.length > 0)
+  div.well
+    div.content
+      div.row
+        - for (var i in posts) {
+        - c = i
+        - if (c == 3) {
+        - c = 0
+      div.row
+        - }
+        mixin thumb(posts[i].value)
+        - }
+
+script(src="js/bootstrap-transition.js")
+script(src="js/bootstrap-collapse.js")

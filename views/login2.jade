@@ -1,0 +1,39 @@
+div(class='hero-unit geddy-welcome-box')
+  h3 Please login
+  div.row
+    div(class='span3 offset4')
+      div(id='msg', class='alert alert-error hidden') Login or password is incorrect
+      form.form-vertical'
+        input(type='text', class='span3', placeholder='login', name='login')
+        input(type='password', class='span3', placeholder='password', name='password')
+        input(type='submit', id='submit', class='span2 btn btn-primary', label='Login')
+
+  p: a(href='/users/add') Need to register?
+
+script(type='text/javascript')
+  $("#submit").on('click', function(ev){
+    ev.preventDefault();
+
+    var pass = $("input[name='password']").val();
+    var name = $("input[name='login']").val();
+    pass = Crypto.MD5(pass);
+
+    $.post("/login/auth", {
+      login: name,
+      password: pass
+    })
+    .error(function(x,s,e) {
+      console.log("failed to send login info", s);
+    })
+    .success(function(data,s,x) {
+      var d = {};
+      console.log(data);
+      try { d = JSON.parse(data); }
+      catch (e) { console.log(e); }
+        if ('error' in d) {
+          $("#msg").removeClass('hidden');
+          } else if ('redirect' in d) {
+            window.location.pathname = d.redirect;
+          }
+    }, "json");
+  });
