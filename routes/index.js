@@ -4,7 +4,7 @@ var auth = require('../lib/auth').auth,  //handle authentication
 	db = require('../lib/db').db,
 	conf = require('../config/app_config').app_config;
 
-db.init(app_config.db);
+db.init(conf.db);
 
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {
@@ -51,7 +51,7 @@ exports.auth = {
 		    gender: profile.gender,
 		    relationship_status: profile.relationship_status,
 		    email: profile.email,
-		    timezone: profile.timezone;,
+		    timezone: profile.timezone,
 		    locale: profile.locale,
 		    fb_updated_time: profile.updated_time
 		};
