@@ -13,7 +13,6 @@ var express = require('express'),
 
 var app = module.exports = express.createServer();
 
-console.log(app_config)
 db.init(app_config.db);
 
 /* Passport and Facebook Connect Configuration */
