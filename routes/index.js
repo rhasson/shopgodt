@@ -27,7 +27,7 @@ exports.index = function(req, res){
 
 exports.auth = {
 	facebook_cb: function(req, res) {
-		console.log(util.inspect(Arguments, true, null));
+		console.log(arguments);
 		res.redirect('/');
 	},
 	fb_redirect: function(req, res) {
