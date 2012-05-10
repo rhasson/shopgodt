@@ -564,9 +564,9 @@
 })(window, document, navigator, {
     k: "TOK_" + (new Date).getTime(),
     checkpoint: {
-        url: "//codengage.com/api/v1/domains/info/"
+        url: "http://codengage.com/api/v1/domains/info/"
     },
-    embed: "//codengage.com/api/v1/util/embed/?",
+    embed: "http://codengage.com/api/v1/util/embed/?",
     pin: "codengage.com/api/v1/item/create/",
     minImgSize: 30,  //80
     thumbCellSize: 50,  //200
