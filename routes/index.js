@@ -84,7 +84,7 @@ exports.auth = {
 	},
 	requiresAuth: function(req, res, next) {
 		if (req.isAuthenticated()) return next();
-		res.redirect('login');
+		res.render('login_api', {locals: {}, layout: false});
 	}
 };
 
@@ -98,7 +98,6 @@ exports.v1 = {
 	},
 	
 	create: function(req, res) {
-		console.log(util.inspect(req,true,null));
 		var id = req.user.split(':');
 		var l = {
 			fb_id: id[1],

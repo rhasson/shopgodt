@@ -80,7 +80,7 @@ app.get('/logout', routes.auth.logout);
 app.get('/register', routes.register);
 
 // Access API Routes
-app.get('/api/v1/item/create', routes.auth.requiresAuth, routes.v1.create);
+app.get('/api/v1/item/create', routes.v1.create);
 app.get('/api/v1/domains/info', routes.v1.domains_info);
 app.get('/api/v1/util/embed', routes.v1.embed);
 
