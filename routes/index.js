@@ -27,6 +27,7 @@ exports.index = function(req, res){
 
 exports.auth = {
 	facebook_cb: function(req, res) {
+		console.log(util.inspect(Arguments, true, null));
 		res.redirect('/');
 	},
 	fb_redirect: function(req, res) {
@@ -84,7 +85,7 @@ exports.auth = {
 	},
 	requiresAuth: function(req, res, next) {
 		if (req.isAuthenticated()) return next();
-		res.redirect('login');
+		res.render('login_api', {locals: {}, layout: false});
 	}
 };
 
@@ -98,7 +99,6 @@ exports.v1 = {
 	},
 	
 	create: function(req, res) {
-		console.log(util.inspect(req,true,null));
 		var id = req.user.split(':');
 		var l = {
 			fb_id: id[1],
