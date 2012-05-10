@@ -1,7 +1,8 @@
 //routes
 var auth = require('../lib/auth').auth,  //handle authentication
 	items = require('../lib/items').items,  //handle access to items posted
-	db = require('../lib/db').db;
+	db = require('../lib/db').db,
+	util = require('util');
 
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {
@@ -93,11 +94,17 @@ exports.register = function(req, res){
 
 exports.v1 = {
 	embed: function(req, res) {
-		console.log(req.query);
+		console.log("EMBED: ",req.query);
 	},
 	
 	create: function(req, res) {
+		console.log(util.inspect(req,true,null));
+		var id = req.user.split(':');
 		var l = {
+			fb_id: id[1],
+			profile_id: id[0],
+			type: 'item',
+			private: false,
 			media: req.query.media,
 			url: req.query.url,
 			title: req.query.title,
@@ -106,7 +113,11 @@ exports.v1 = {
 			via: req.query.via || ''
 		};
 		items.save(l, function(err, r){
-			
+			if (!err) {
+				res.render('success', {locals: {posts: posts}, layout: false});
+			} else {
+				res.render('error', {locals: {error: err}, layout: false});
+			}
 		});
 	},
 

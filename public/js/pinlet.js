@@ -562,7 +562,7 @@
     };
     a.f.init()
 })(window, document, navigator, {
-    k: "TIK_" + (new Date).getTime(),
+    k: "TOK_" + (new Date).getTime(),
     checkpoint: {
         url: "//codengage.com/api/v1/domains/info/"
     },
