@@ -23,6 +23,7 @@ var fb = new Facebook({
   scope: ['email']
 });
 
+
 /* Passport and Facebook Connect Configuration */
 
 //handles serialization to store session state
