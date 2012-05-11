@@ -96,7 +96,7 @@ app.get('/api/v1/util/embed', routes.v1.embed);
 
 // Facebook connect Routes
 app.get('/auth/facebook', fb.login(), routes.auth.fb_redirect);
-app.get('/auth/facebook/callback', fb.redirect, routes.auth.facebook_cb);
+app.get('/auth/facebook/callback', fb.redirect(), routes.auth.facebook_cb);
 
 
 /*app.get('/auth/facebook', 
