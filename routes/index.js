@@ -30,7 +30,7 @@ exports.auth = {
 		console.log(req.query);
 	},
 	fb_redirect: function(req, res, next) {
-
+		console.log(arguments);
 	},
 	passport_cb: function(accessToken, refreshToken, profile, done) {
 		/* 1. check if fb_id is in local db
