@@ -1,6 +1,7 @@
 
 /**
- * Module dependencies.
+ * ShopGodt main application
+ * v.0.0.1
  */
 
 var express = require('express'),
@@ -8,9 +9,7 @@ var express = require('express'),
     app_config = require('./config/app_config').app_config,
     routes = require('./routes'),
     Facebook = require('./lib/fb_api'),
-//    passport = require('passport'),
     db = require('./lib/db').db;
-//    FacebookStrategy = require('passport-facebook').Strategy;
 
 var app = module.exports = express.createServer();
 
@@ -23,39 +22,6 @@ var fb = new Facebook({
   scope: ['email']
 });
 
-
-/* Passport and Facebook Connect Configuration */
-
-//handles serialization to store session state
-/*passport.serializeUser(function(user, done) {
-  console.log('serialize: ', util.inspect(user, true, null))
-  db.save({body: user})
-
-  cache.set(user, function(err, id){
-    if (!err) done(null, id);
-    else done(err);
-  });
-  return done(null, user);
-});*/
-
-//handles deserialization to retreive session state
-/*passport.deserializeUser(function(id, done) {
-  console.log('deserialize: ', util.inspect(id, true, null));
-  
-  cache.get(id, function(err, user) {
-    if(!err) done(null, user);
-    else done(err);
-  });
-  return done(null, id);
-});
-
-passport.use(new FacebookStrategy({
-    clientID: app_config.fb.app_id,
-    clientSecret: app_config.fb.app_secret,
-    callbackURL: "http://codengage.com/auth/facebook/callback"
-  }, routes.auth.passport_cb));
-*/
-
 /* Server Configuration */
 app.configure(function(){
   app.set('views', __dirname + '/views');
@@ -63,8 +29,6 @@ app.configure(function(){
   app.use(express.bodyParser());
   app.use(express.cookieParser());
   app.use(express.session({secret: 'testing this stuff'}));
-//  app.use(passport.initialize());
-//  app.use(passport.session());
   app.use(express.methodOverride());
   app.use(app.router);
   app.enable("jsonp callback");
@@ -98,14 +62,6 @@ app.get('/api/v1/util/embed', routes.v1.embed);
 app.get('/auth/facebook', fb.login(), routes.auth.fb_redirect);
 app.get('/auth/facebook/callback', fb.redirect(), routes.auth.facebook_cb);
 
-
-/*app.get('/auth/facebook', 
-        passport.authenticate('facebook', {scope: ['email']}),
-        routes.auth.fb_redirect);
-app.get('/auth/facebook/callback', 
-        passport.authenticate('facebook', {failureRedirect: '/login?error='+encodeURIComponent("Facebook login failed")}),
-        routes.auth.facebook_cb);
-*/
 
 app.listen(app_config.server.port, app_config.server.host, function(){
   console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

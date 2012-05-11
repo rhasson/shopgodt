@@ -5,7 +5,8 @@ var auth = require('../lib/auth').auth,  //handle authentication
 	util = require('util');
 
 exports.index = function(req, res){
-	if (req.isAuthenticated()) {
+	if (req.fb.isAuthenticated()) {
+		
 		var id = req.user.split(':')[1];
 		items.byFbId(id, function(err, posts) {
 			if (!err) {
@@ -83,7 +84,7 @@ exports.auth = {
 		res.redirect('/');
 	},
 	requiresAuth: function(req, res, next) {
-		if (req.isAuthenticated()) return next();
+		if (req.fb.isAuthenticated()) return next();
 		res.render('login_api', {locals: {}, layout: false});
 	}
 };
