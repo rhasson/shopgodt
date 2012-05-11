@@ -26,12 +26,11 @@ exports.index = function(req, res){
 };
 
 exports.auth = {
-	facebook_cb: function(req, res) {
-		console.log(arguments);
-		res.redirect('/');
+	facebook_cb: function(req, res, next) {
+		console.log(req.query);
 	},
-	fb_redirect: function(req, res) {
-		/* this should never be called since request will be redirected to facebook for login */
+	fb_redirect: function(req, res, next) {
+
 	},
 	passport_cb: function(accessToken, refreshToken, profile, done) {
 		/* 1. check if fb_id is in local db
