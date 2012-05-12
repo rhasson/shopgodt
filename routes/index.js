@@ -37,8 +37,10 @@ exports.auth = {
 				if (!err) {
 					profile.create(user, function(err2, doc) {
 						if (!err2) {
-							cache[req.sessionId].id = doc;
-							cache[req.sessionId].access_token = req.session.fb.access_token;
+							cache[req.sessionId] = {
+								id: doc,
+								access_token: req.session.fb.access_token
+							};
 							res.redirect('/')
 						}
 					});
