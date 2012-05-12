@@ -1,8 +1,11 @@
 //routes
 var auth = require('../lib/auth').auth,  //handle authentication
 	items = require('../lib/items').items,  //handle access to items posted
+	profile = require('../lib/profiles').profiles,  //handle access to user profiles
 	db = require('../lib/db').db,
 	util = require('util');
+
+var cache = {};
 
 exports.index = function(req, res){
 	if (req.fb.isAuthenticated()) {
@@ -28,54 +31,25 @@ exports.index = function(req, res){
 
 exports.auth = {
 	facebook_cb: function(req, res, next) {
-		console.log("data ",req.fb);
-		res.redirect('/');
+		var fb = req.session.fb.instance;
+		if (fb.isAuthenticated(req)) {
+			fb.profile(req.session.fb.access_token, function(err, user) {
+				if (!err) {
+					profile.create(user, function(err2, doc) {
+						if (!err2) {
+							cache[req.sessionId].id = doc;
+							cache[req.sessionId].access_token = req.session.fb.access_token;
+							res.redirect('/')
+						}
+					});
+
+				}
+			});
+		}
 	},
 	fb_redirect: function(req, res, next) {
 	},
-	passport_cb: function(accessToken, refreshToken, profile, done) {
-		/* 1. check if fb_id is in local db
-		   2. if not create a new document with profile detail and return doc_id/rev
-		   3. if it is, update db with profile detail and return doc_id/rev
-		   4. call done() with doc_id/rev
-		*/
-		profile = profile._json;
-		var p = {
-			type: 'profile',
-			fb_id: profile.id,
-		    name: profile.name,
-		    first_name: profile.first_name,
-		    last_name: profile.last_name,
-		    fb_link: profile.link,
-		    birthday: profile.birthday,
-		    location: profile.location,
-		    gender: profile.gender,
-		    relationship_status: profile.relationship_status,
-		    email: profile.email,
-		    timezone: profile.timezone,
-		    locale: profile.locale,
-		    fb_updated_time: profile.updated_time
-		};
 
-		db.view({
-			view: 'profiles/byFbId',
-			body: {key: p.fb_id}
-		}, function(err, doc) {
-			if (err) return done(err);
-			else if (doc.length  === 0) {
-				db.save({body: p}, function(err2, newDoc) {
-					if (err2) return done(err2);
-					else if (newDoc.ok) return done(null, newDoc.id+':'+p.fb_id);
-				});
-			}
-			else if (doc.length > 0) {
-				db.update({id: doc[0].id, body: p}, function(err3, upDoc) {
-					if (err3) return done(err3);
-					else if (upDoc.ok) return done(null, upDoc.id+':'+p.fb_id);
-				});
-			} else return done(new Error('Error with log in and registration process'));
-		});
-	},
 	login: function(req, res) {
 		res.render('login');
 	},
