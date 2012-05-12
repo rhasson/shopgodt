@@ -8,7 +8,7 @@ var auth = require('../lib/auth').auth,  //handle authentication
 var cache = {};
 
 exports.index = function(req, res){
-	if (req.fb.isAuthenticated()) {
+	if (req.session.fb.instance.isAuthenticated(req)) {
 		
 		var id = req.user.split(':')[1];
 		items.byFbId(id, function(err, posts) {
