@@ -30,6 +30,7 @@ app.configure(function(){
   app.use(express.cookieParser());
   app.use(express.session({secret: 'testing this stuff'}));
   app.use(express.methodOverride());
+  app.use(fb.init());
   app.use(app.router);
   app.enable("jsonp callback");
   app.use(express.static(__dirname + '/public'));
