@@ -8,7 +8,8 @@ var auth = require('../lib/auth').auth,  //handle authentication
 var cache = {};
 
 exports.index = function(req, res){
-	if (req.session.fb.instance.isAuthenticated(req)) {
+	var fb = req.session.fb.instance.[0];
+	if (fb.isAuthenticated(req)) {
 		
 		var id = req.user.split(':')[1];
 		items.byFbId(id, function(err, posts) {
@@ -31,7 +32,7 @@ exports.index = function(req, res){
 
 exports.auth = {
 	facebook_cb: function(req, res, next) {
-		var fb = req.session.fb.instance;
+		var fb = req.session.fb.instance[0];
 		if (fb.isAuthenticated(req)) {
 			fb.profile(req.session.fb.access_token, function(err, user) {
 				if (!err) {
