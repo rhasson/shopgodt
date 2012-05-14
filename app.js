@@ -9,7 +9,8 @@ var express = require('express'),
     app_config = require('./config/app_config').app_config,
     routes = require('./routes'),
     Facebook = require('./lib/fb_api'),
-    db = require('./lib/db').db;
+    db = require('./lib/db').db,
+    RedisStore = require('connect-redis')(express);
 
 var app = module.exports = express.createServer();
 
@@ -28,7 +29,7 @@ app.configure(function(){
   app.set('view engine', 'jade');
   app.use(express.bodyParser());
   app.use(express.cookieParser());
-  app.use(express.session({secret: 'testing this stuff'}));
+  app.use(express.session({secret: 'testing this stuff', store: new RedisStore}));
   app.use(express.methodOverride());
   app.use(fb.init());
   app.use(app.router);
@@ -62,6 +63,7 @@ app.get('/api/v1/util/embed', routes.v1.embed);
 // Facebook connect Routes
 app.get('/auth/facebook', fb.login(), routes.auth.fb_redirect);
 app.get('/auth/facebook/callback', fb.redirect(), routes.auth.facebook_cb);
+app.get('/auth/facebook/logou', fb.logout());
 
 
 app.listen(app_config.server.port, app_config.server.host, function(){

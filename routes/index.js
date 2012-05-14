@@ -8,9 +8,7 @@ var auth = require('../lib/auth').auth,  //handle authentication
 var cache = {};
 
 exports.index = function(req, res){
-	var fb = req.session.fb.instance.[0];
-	if (fb.isAuthenticated(req)) {
-		
+	if (fb.isAuthenticated()) {		
 		var id = req.user.split(':')[1];
 		items.byFbId(id, function(err, posts) {
 			if (!err) {
@@ -32,20 +30,14 @@ exports.index = function(req, res){
 
 exports.auth = {
 	facebook_cb: function(req, res, next) {
-		var fb = req.session.fb.instance[0];
-		if (fb.isAuthenticated(req)) {
-			fb.profile(req.session.fb.access_token, function(err, user) {
-				if (!err) {
-					profile.create(user, function(err2, doc) {
-						if (!err2) {
-							cache[req.sessionId] = {
-								id: doc,
-								access_token: req.session.fb.access_token
-							};
-							res.redirect('/')
-						}
-					});
-
+		if (req.isAuthenticated()) {		
+			profile.create(req.session.fb.user, function(err2, doc) {
+				if (!err2) {
+					cache[req.sessionId] = {
+						id: doc,
+						access_token: req.session.fb.access_token
+					};
+					res.redirect('/')
 				}
 			});
 		}
@@ -57,8 +49,7 @@ exports.auth = {
 		res.render('login');
 	},
 	logout: function(req, res) {
-		req.logout();
-		res.redirect('/');
+		res.redirect('/auth/facebook/logout');
 	},
 	requiresAuth: function(req, res, next) {
 		if (req.fb.isAuthenticated()) return next();
