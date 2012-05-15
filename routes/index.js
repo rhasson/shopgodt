@@ -9,8 +9,7 @@ var cache = {};
 
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {		
-		var id = req.user.split(':')[1];
-		items.byFbId(id, function(err, posts) {
+		items.byFbId(req.session.fb.user.id, function(err, posts) {
 			if (!err) {
 				res.render('index', {locals: {posts: posts}});
 			} else {
@@ -67,7 +66,7 @@ exports.v1 = {
 	},
 	
 	create: function(req, res) {
-		var id = req.user.split(':');
+		var id = req.session.fb.user.split(':');
 		var l = {
 			fb_id: id[1],
 			profile_id: id[0],

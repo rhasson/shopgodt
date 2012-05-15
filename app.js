@@ -52,7 +52,7 @@ app.configure('production', function(){
 // Basic Routes
 app.get('/', routes.index);  //render a login page instead of index
 app.get('/login', routes.auth.login);
-app.get('/logout', routes.auth.logout);
+app.get('/logout', fb.logout());
 app.get('/register', routes.register);
 
 // Access API Routes
@@ -63,7 +63,7 @@ app.get('/api/v1/util/embed', routes.v1.embed);
 // Facebook connect Routes
 app.get('/auth/facebook', fb.login(), routes.auth.fb_redirect);
 app.get('/auth/facebook/callback', fb.redirect(), routes.auth.facebook_cb);
-app.get('/auth/facebook/logou', fb.logout());
+app.get('/auth/facebook/logout', fb.logout());
 
 
 app.listen(app_config.server.port, app_config.server.host, function(){
