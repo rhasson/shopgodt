@@ -8,7 +8,7 @@ var auth = require('../lib/auth').auth,  //handle authentication
 var cache = {};
 
 exports.index = function(req, res){
-	if (fb.isAuthenticated()) {		
+	if (req.isAuthenticated()) {		
 		var id = req.user.split(':')[1];
 		items.byFbId(id, function(err, posts) {
 			if (!err) {
@@ -52,7 +52,7 @@ exports.auth = {
 		res.redirect('/auth/facebook/logout');
 	},
 	requiresAuth: function(req, res, next) {
-		if (req.fb.isAuthenticated()) return next();
+		if (req.isAuthenticated()) return next();
 		res.render('login_api', {locals: {}, layout: false});
 	}
 };
