@@ -3,9 +3,8 @@ var auth = require('../lib/auth').auth,  //handle authentication
 	items = require('../lib/items').items,  //handle access to items posted
 	profile = require('../lib/profiles').profiles,  //handle access to user profiles
 	db = require('../lib/db').db,
-	util = require('util');
-
-var cache = {};
+	util = require('util'),
+	cache = require('redis').createClient();
 
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {		
@@ -32,11 +31,18 @@ exports.auth = {
 		if (req.isAuthenticated()) {		
 			profile.create(req.session.fb.user, function(err2, doc) {
 				if (!err2) {
-					cache[req.sessionId] = {
-						id: doc,
+					//id = profile_doc_id : fb_id : access_token
+					cache.hset('sessions', req.sessionId, doc+':'+req.session.fb.access_token, function(err) {
+						if (req.query.return_uri) {
+							var url = new Buffer(req.query.return_uri, 'base64').toString('utf8');
+							res.redirect(url);
+						} else res.redirect('/');
+					});
+/*					req.session.user = {
+						profile_id: doc,
 						access_token: req.session.fb.access_token
 					};
-					res.redirect('/')
+*/
 				}
 			});
 		}
@@ -52,7 +58,8 @@ exports.auth = {
 	},
 	requiresAuth: function(req, res, next) {
 		if (req.isAuthenticated()) return next();
-		res.render('login_api', {locals: {}, layout: false});
+		var url = new Buffer(req.url).toString('base64');
+		res.render('login_api', {locals: {return_uri: url}, layout: false});
 	}
 };
 
@@ -66,25 +73,27 @@ exports.v1 = {
 	},
 	
 	create: function(req, res) {
-		var id = req.session.fb.user.split(':');
-		var l = {
-			fb_id: id[1],
-			profile_id: id[0],
-			type: 'item',
-			private: false,
-			media: req.query.media,
-			url: req.query.url,
-			title: req.query.title,
-			desc: req.query.description,
-			is_video: req.query.is_video,
-			via: req.query.via || ''
-		};
-		items.save(l, function(err, r){
-			if (!err) {
-				res.render('success', {locals: {posts: posts}, layout: false});
-			} else {
-				res.render('error', {locals: {error: err}, layout: false});
-			}
+		cache.hget('sessions', req.sessionId, function(err, value) {
+			var v = value.split(':');
+			var l = {
+				fb_id: v[1],
+				profile_id: v[0],
+				type: 'item',
+				private: false,
+				media: req.query.media,
+				url: req.query.url,
+				title: req.query.title,
+				desc: req.query.description,
+				is_video: req.query.is_video,
+				via: req.query.via || ''
+			};
+			items.save(l, function(err, r){
+				if (!err) {
+					res.render('success', {locals: {posts: posts}, layout: false});
+				} else {
+					res.render('error', {locals: {error: err}, layout: false});
+				}
+			});
 		});
 	},
 
