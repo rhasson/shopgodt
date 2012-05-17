@@ -33,9 +33,10 @@ exports.auth = {
 				if (!err2) {
 					//id = profile_doc_id : fb_id : access_token
 					cache.hset('sessions', req.sessionId, doc+':'+req.session.fb.access_token, function(err) {
-						if (req.query.return_uri) {
-							var url = new Buffer(req.query.return_uri, 'base64').toString('utf8');
-							res.redirect(url);
+						if (req._fb.return_uri) {
+							var u = req._fb.return_uri
+							req._fb.return_uri = null;
+							res.redirect(u);
 						} else res.redirect('/');
 					});
 /*					req.session.user = {
@@ -54,12 +55,13 @@ exports.auth = {
 		res.render('login');
 	},
 	logout: function(req, res) {
+		cache.hdel('sessions', req.sessionId);
 		res.redirect('/auth/facebook/logout');
 	},
 	requiresAuth: function(req, res, next) {
 		if (req.isAuthenticated()) return next();
-		var url = new Buffer(req.url).toString('base64');
-		res.render('login_api', {locals: {return_uri: url}, layout: false});
+		req._fb.return_uri = req.url;
+		res.render('login_api', {layout: false});
 	}
 };
 
