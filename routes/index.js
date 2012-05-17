@@ -91,7 +91,7 @@ exports.v1 = {
 			};
 			items.save(l, function(err, r){
 				if (!err) {
-					res.render('success', layout: false});
+					res.render('success', {layout: false});
 				} else {
 					res.render('error', {locals: {error: err}, layout: false});
 				}
