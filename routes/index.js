@@ -82,7 +82,7 @@ exports.v1 = {
 				profile_id: v[0],
 				type: 'item',
 				private: false,
-				media: req.query.media,
+				media: req.query.media.trim(),
 				url: req.query.url,
 				title: req.query.title,
 				desc: req.query.description,
