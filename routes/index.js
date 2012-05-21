@@ -1,14 +1,19 @@
 //routes
 var auth = require('../lib/auth').auth,  //handle authentication
-	items = require('../lib/items').items,  //handle access to items posted
-	profile = require('../lib/profiles').profiles,  //handle access to user profiles
+//	items = require('../lib/items').items,  //handle access to items posted
+//	profile = require('../lib/profiles').profiles,  //handle access to user profiles
+	Access = require('../lib/access');
 	db = require('../lib/db').db,
-	util = require('util'),
-	cache = require('redis').createClient();
+	util = require('util');
+//	cache = require('redis').createClient();
+
+var items = new Access('item');
+var profiles = new Access('profile');
+var questions = new Access('question');
 
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {		
-		items.byFbId(req.session.fb.user.id, function(err, posts) {
+		items.view({view: 'byFbId', key: req.session.fb.user.id}, function(err, posts) {
 			if (!err) {
 				res.render('index', {locals: {user: req.fb.user.name, posts: posts}});
 			} else {
@@ -16,7 +21,7 @@ exports.index = function(req, res){
 			}
 		});
 	} else {
-		items.all(function(err, posts){
+		items.view({view: 'all'}, (function(err, posts){
 			if (!err) {
 				res.render('index', {locals: {posts: posts}});
 			} else {
@@ -29,16 +34,19 @@ exports.index = function(req, res){
 exports.auth = {
 	facebook_cb: function(req, res, next) {
 		if (req.isAuthenticated()) {		
-			profile.create(req.session.fb.user, function(err2, doc) {
+			profiles.create(req.session.fb.user, function(err2, doc) {
 				if (!err2) {
 					//id = profile_doc_id : fb_id : access_token
-					cache.hset('sessions', req.sessionId, doc+':'+req.session.fb.access_token, function(err) {
-						if (req._fb.return_uri) {
-							var u = req._fb.return_uri
-							req._fb.return_uri = null;
-							res.redirect(u);
-						} else res.redirect('/');
-					});
+					
+					req.session.fb.profile_id = doc.doc_id;
+					req.session.fb.fb_id = doc.fb_id;
+//					cache.hset('sessions', req.sessionId, doc+':'+req.session.fb.access_token, function(err) {
+					if (req._fb.return_uri) {
+						var u = req._fb.return_uri
+						req._fb.return_uri = null;
+						res.redirect(u);
+					} else res.redirect('/');
+//					});
 /*					req.session.user = {
 						profile_id: doc,
 						access_token: req.session.fb.access_token
@@ -55,7 +63,8 @@ exports.auth = {
 		res.render('login');
 	},
 	logout: function(req, res) {
-		cache.hdel('sessions', req.sessionId);
+		//cache.hdel('sessions', req.sessionId);
+		req.session.destroy();
 		res.redirect('/auth/facebook/logout');
 	},
 	requiresAuth: function(req, res, next) {
@@ -89,11 +98,11 @@ exports.v1 = {
 
 	item: {
 		create: function(req, res) {
-			cache.hget('sessions', req.sessionId, function(err, value) {
-				var v = value.split(':');
+//			cache.hget('sessions', req.sessionId, function(err, value) {
+//				var v = value.split(':');
 				var l = {
-					fb_id: v[1],
-					profile_id: v[0],
+					fb_id: req.session.fb.fb_id,//v[1],
+					profile_id: req.session.fb.profile_id,//v[0],
 					type: 'item',
 					private: false,
 					media: req.query.media.trim(),
@@ -103,38 +112,38 @@ exports.v1 = {
 					is_video: req.query.is_video,
 					via: req.query.via || ''
 				};
-				items.save(l, function(err, r){
+				items.create(l, function(err, r){
 					if (!err) {
 						res.render('api_item_prev', {locals: {item: {id: r.id, title: l.title, media: l.media}}, layout: false});
 					} else {
 						res.render('error', {locals: {error: err}, layout: false});
 					}
 				});
-			});
+//			});
 		}
 	}, 
 
 	ask: {
 		create: function(req, res) {
-			cache.hget('sessions', req.sessionId, function(err, value) {
-				var v = value.split(':');
+//			cache.hget('sessions', req.sessionId, function(err, value) {
+//				var v = value.split(':');
 				var l = {
-					fb_id: v[1],
-					profile_id: v[0],
+					fb_id: req.session.fb.fb_id,//v[1],
+					profile_id: req.session.fb.profile_id,//v[0],
 					item_id: req.params.item_id,
 					type: 'question',
 					private: false,
 					to: req.body.to,
 					question: req.body.question
 				};
-				questions.save(l, function(err, r) {
+				questions.create(l, function(err, r) {
 					if (!err) {
 						res.render('success', {layout: false});
 					} else {
 						res.render('error', {locals: {error: err}, layout: false});
 					}
 				});
-			});
+//			});
 		}
 	}
 };
