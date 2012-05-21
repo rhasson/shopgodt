@@ -10,7 +10,7 @@ exports.index = function(req, res){
 	if (req.isAuthenticated()) {		
 		items.byFbId(req.session.fb.user.id, function(err, posts) {
 			if (!err) {
-				res.render('index', {locals: {posts: posts}});
+				res.render('index', {locals: {user: req.fb.user.name, posts: posts}});
 			} else {
 				res.render('error', {locals: {error: err}});
 			}
@@ -73,32 +73,6 @@ exports.v1 = {
 	embed: function(req, res) {
 		console.log("EMBED: ",req.query);
 	},
-	
-	create: function(req, res) {
-		cache.hget('sessions', req.sessionId, function(err, value) {
-			var v = value.split(':');
-			var l = {
-				fb_id: v[1],
-				profile_id: v[0],
-				type: 'item',
-				private: false,
-				media: req.query.media.trim(),
-				url: req.query.url,
-				title: req.query.title,
-				desc: req.query.description,
-				is_video: req.query.is_video,
-				via: req.query.via || ''
-			};
-			items.save(l, function(err, r){
-				if (!err) {
-					res.render('success', {layout: false});
-				} else {
-					res.render('error', {locals: {error: err}, layout: false});
-				}
-			});
-		});
-	},
-
 	domains_info: function(req, res) {
 		/* req.query
 			url: original url of page being viewed by user
@@ -111,5 +85,56 @@ exports.v1 = {
 		res.header('Content-Type', 'application/json');
 	  	res.header('Charset', 'utf-8');
 	  	res.send(req.query.callback + '({"pinnable": true})');
+	},
+
+	item: {
+		create: function(req, res) {
+			cache.hget('sessions', req.sessionId, function(err, value) {
+				var v = value.split(':');
+				var l = {
+					fb_id: v[1],
+					profile_id: v[0],
+					type: 'item',
+					private: false,
+					media: req.query.media.trim(),
+					url: req.query.url,
+					title: req.query.title,
+					desc: req.query.description,
+					is_video: req.query.is_video,
+					via: req.query.via || ''
+				};
+				items.save(l, function(err, r){
+					if (!err) {
+						res.render('api_item_prev', {locals: {item: {id: r.id, title: l.title, media: l.media}}, layout: false});
+					} else {
+						res.render('error', {locals: {error: err}, layout: false});
+					}
+				});
+			});
+		}
+	}, 
+
+	ask: {
+		create: function(req, res) {
+			cache.hget('sessions', req.sessionId, function(err, value) {
+				var v = value.split(':');
+				var l = {
+					fb_id: v[1],
+					profile_id: v[0],
+					item_id: req.params.item_id,
+					type: 'question',
+					private: false,
+					to: req.body.to,
+					question: req.body.question
+				};
+				questions.save(l, function(err, r) {
+					if (!err) {
+						res.render('success', {layout: false});
+					} else {
+						res.render('error', {locals: {error: err}, layout: false});
+					}
+				});
+			});
+		}
 	}
 };

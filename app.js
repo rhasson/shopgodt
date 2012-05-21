@@ -55,8 +55,12 @@ app.get('/login', routes.auth.login);
 app.get('/logout', fb.logout());
 app.get('/register', routes.register);
 
-// Access API Routes
-app.get('/api/v1/item/create', routes.auth.requiresAuth, routes.v1.create);
+/** Access API Routes **/
+// item routes
+app.get('/api/v1/item/create', routes.auth.requiresAuth, routes.v1.item.create);
+//question routes
+app.post('/api/v1/ask/:item_id', routes.auth.requiresAuth, routes.v1.ask.create);
+//utility routes
 app.get('/api/v1/domains/info', routes.v1.domains_info);
 app.get('/api/v1/util/embed', routes.v1.embed);
 
