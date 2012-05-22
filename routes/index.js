@@ -21,7 +21,7 @@ exports.index = function(req, res){
 			}
 		});
 	} else {
-		items.view({view: 'all'}, (function(err, posts){
+		items.view({view: 'all'}, function(err, posts){
 			if (!err) {
 				res.render('index', {locals: {posts: posts}});
 			} else {
@@ -114,7 +114,19 @@ exports.v1 = {
 				};
 				items.create(l, function(err, r){
 					if (!err) {
-						res.render('api_item_prev', {locals: {item: {id: r.id, title: l.title, media: l.media}}, layout: false});
+						var friends = [];
+						if (req.session.fb.friends) {
+							req.session.fb.friends.forEach(function(i){
+								friends.push(i.name);
+							});
+						}
+						res.render('api_item_prev', {locals: {
+							item: {
+								id: r.id, 
+								title: l.title, 
+								media: l.media,
+								friends: friends
+							}}, layout: false});
 					} else {
 						res.render('error', {locals: {error: err}, layout: false});
 					}

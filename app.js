@@ -12,7 +12,8 @@ var express = require('express'),
     db = require('./lib/db').db,
     RedisStore = require('connect-redis')(express);
 
-var app = module.exports = express.createServer();
+var app = module.exports = express.createServer(),
+    io = require('socket.io').listen(app);
 
 db.init(app_config.db);
 
@@ -49,6 +50,14 @@ app.configure('production', function(){
   app.use(express.errorHandler());
 });
 
+//Socket.IO
+io.sockets.on('connection', function(socket) {
+  socket.on('/api/v1/ask/create', function(data) {
+    //check authentication
+    routes.io.ask.create(socket, data);
+  });
+});
+
 // Basic Routes
 app.get('/', routes.index);  //render a login page instead of index
 app.get('/login', routes.auth.login);
@@ -57,7 +66,7 @@ app.get('/register', routes.register);
 
 /** Access API Routes **/
 // item routes
-app.get('/api/v1/item/create', routes.auth.requiresAuth, routes.v1.item.create);
+app.get('/api/v1/item/create', routes.auth.requiresAuth, fb.getFriends(), routes.v1.item.create);
 //question routes
 app.post('/api/v1/ask/:item_id', routes.auth.requiresAuth, routes.v1.ask.create);
 //utility routes
