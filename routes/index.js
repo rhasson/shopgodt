@@ -12,10 +12,10 @@ var profiles = new Access('profile');
 var questions = new Access('question');
 
 exports.index = function(req, res){
-	if (req.isAuthenticated()) {		
+	if (req.isAuthenticated()) {	
 		items.view({view: 'byFbId', key: req.session.fb.user.id}, function(err, posts) {
 			if (!err) {
-				res.render('index', {locals: {user: req.fb.user.name || 'Visitor', posts: posts}});
+				res.render('index', {locals: {user: req.fb.user.name, posts: posts}});
 			} else {
 				res.render('error', {locals: {error: err}});
 			}
@@ -23,7 +23,7 @@ exports.index = function(req, res){
 	} else {
 		items.view({view: 'all'}, function(err, posts){
 			if (!err) {
-				res.render('index', {locals: {user: req.fb.user.name || 'Visitor', posts: posts}});
+				res.render('index', {locals: {user: 'Visitor', posts: posts}});
 			} else {
 				res.render('error', {locals: {error: err}});
 			}
