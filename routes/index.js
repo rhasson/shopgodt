@@ -68,8 +68,10 @@ exports.auth = {
 	},
 	requiresAuth: function(req, res, next) {
 		if (req.isAuthenticated()) next();
-		req.session.return_uri = req.url;
-		res.render('login_api', {layout: false});
+		else {
+			req.session.return_uri = req.url;
+			res.render('login_api', {layout: false});
+		}
 	}
 };
 
@@ -103,7 +105,7 @@ exports.v1 = {
 					fb_id: req.session.fb.fb_id,//v[1],
 					profile_id: req.session.fb.profile_id,//v[0],
 					type: 'item',
-					private: false,
+					private: true,
 					media: req.query.media.trim(),
 					url: req.query.url,
 					title: req.query.title,
