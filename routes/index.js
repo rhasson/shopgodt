@@ -41,9 +41,9 @@ exports.auth = {
 					req.session.fb.profile_id = doc.doc_id;
 					req.session.fb.fb_id = doc.fb_id;
 //					cache.hset('sessions', req.sessionId, doc+':'+req.session.fb.access_token, function(err) {
-					if (req.session.fb.return_uri) {
+					if (req.session.return_uri) {
 						var u = req.session.fb.return_uri
-						req.session.fb.return_uri = null;
+						req.session.return_uri = null;
 						res.redirect(u);
 					} else res.redirect('/');
 //					});
@@ -68,7 +68,7 @@ exports.auth = {
 	},
 	requiresAuth: function(req, res, next) {
 		if (req.isAuthenticated()) next();
-		req.session.fb.return_uri = req.url;
+		req.session.return_uri = req.url;
 		res.render('login_api', {layout: false});
 	}
 };
