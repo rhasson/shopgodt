@@ -15,7 +15,7 @@ exports.index = function(req, res){
 	if (req.isAuthenticated()) {		
 		items.view({view: 'byFbId', key: req.session.fb.user.id}, function(err, posts) {
 			if (!err) {
-				res.render('index', {locals: {user: req.fb.user.name, posts: posts}});
+				res.render('index', {locals: {user: req.fb.user.name || 'Visitor', posts: posts}});
 			} else {
 				res.render('error', {locals: {error: err}});
 			}
