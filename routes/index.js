@@ -15,7 +15,7 @@ exports.index = function(req, res){
 	if (req.isAuthenticated()) {	
 		items.view({view: 'byFbId', key: req.session.fb.user.id}, function(err, posts) {
 			if (!err) {
-				res.render('index', {locals: {user: req.fb.user.name, posts: posts}});
+				res.render('index', {locals: {user: req.session.fb.user.name, posts: posts}});
 			} else {
 				res.render('error', {locals: {user: 'Visitor', error: err}});
 			}
@@ -64,11 +64,10 @@ exports.auth = {
 	},
 	logout: function(req, res) {
 		//cache.hdel('sessions', req.sessionId);
-		req.session.destroy();
 		res.redirect('/auth/facebook/logout');
 	},
 	requiresAuth: function(req, res, next) {
-		if (req.isAuthenticated()) return next();
+		if (req.isAuthenticated()) next();
 		req.session.fb.return_uri = req.url;
 		res.render('login_api', {layout: false});
 	}
