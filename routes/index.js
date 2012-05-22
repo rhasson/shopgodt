@@ -42,7 +42,7 @@ exports.auth = {
 					req.session.fb.fb_id = doc.fb_id;
 //					cache.hset('sessions', req.sessionId, doc+':'+req.session.fb.access_token, function(err) {
 					if (req.session.return_uri) {
-						var u = req.session.fb.return_uri
+						var u = req.session.return_uri
 						req.session.return_uri = null;
 						res.redirect(u);
 					} else res.redirect('/');
