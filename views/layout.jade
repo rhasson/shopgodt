@@ -29,16 +29,16 @@ html
                 li: a(href='/') About Us
                 li: a(href='/') More
               ul(class='nav pull-right')
-              if (user == 'Visitor')
-                li(class='dropdown hidden')
-              else
-                li(class='dropdown')
-                  a(id='welcome_name', href='#', class='dropdown-toggle', data-toggle='dropdown') #{user}
-                    b.caret
-                  ul.dropdown-menu
-                    li: a(href='/profiles/show') Profile
-                    li.divider
-                    li: a(href='/logout') Sign Out
+                if (user == 'Visitor')
+                  li(class='dropdown hidden')
+                else
+                  li(class='dropdown')
+                    a(id='welcome_name', href='#', class='dropdown-toggle', data-toggle='dropdown') #{user}
+                      b.caret
+                    ul.dropdown-menu
+                      li: a(href='/profiles/show') Profile
+                      li.divider
+                      li: a(href='/logout') Sign Out
 
       div.container!= body
 

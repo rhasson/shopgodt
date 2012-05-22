@@ -12,8 +12,7 @@ var express = require('express'),
     db = require('./lib/db').db,
     RedisStore = require('connect-redis')(express);
 
-var app = module.exports = express.createServer(),
-    io = require('socket.io').listen(app);
+var app = module.exports = express.createServer();
 
 db.init(app_config.db);
 
@@ -48,14 +47,6 @@ app.configure('local', function(){
 
 app.configure('production', function(){
   app.use(express.errorHandler());
-});
-
-//Socket.IO
-io.sockets.on('connection', function(socket) {
-  socket.on('/api/v1/ask/create', function(data) {
-    //check authentication
-    routes.io.ask.create(socket, data);
-  });
 });
 
 // Basic Routes
