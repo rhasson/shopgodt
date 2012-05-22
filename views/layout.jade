@@ -30,7 +30,7 @@ html
                 li: a(href='/') More
               ul(class='nav pull-right')
                 li(class='dropdown hidden')
-                  - if (user) {
+                  - if (user != null) {
                     a(id='welcome_name', href='#', class='dropdown-toggle', data-toggle='dropdown') #{user}
                   - } else {
                     a(id='welcome_name', href='#', class='dropdown-toggle', data-toggle='dropdown')

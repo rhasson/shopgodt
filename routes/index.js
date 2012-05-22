@@ -23,7 +23,7 @@ exports.index = function(req, res){
 	} else {
 		items.view({view: 'all'}, function(err, posts){
 			if (!err) {
-				res.render('index', {locals: {user: 'Visitor', posts: posts}});
+				res.render('index', {locals: {posts: posts}});
 			} else {
 				res.render('error', {locals: {error: err}});
 			}
