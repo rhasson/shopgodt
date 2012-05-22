@@ -1,8 +1,13 @@
 !!! 5
 html
   head
+    meta(name='viewport', content='width=device-width')
+    
     link(rel='stylesheet', href='http://codengage.com/css/bootstrap.min.css')
+    link(rel='stylesheet', href='http://codengage.com/css/bootstrap.responsive.min.css')
+
     script(type='text/javascript', src='http://codengage.com/js/jquery.min.js')
+    script(type='text/javascript', src='http://codengage.com/js/bootstrap.min.js')
     script(type='text/javascript', src='http://codengage.com/js/bootstrap-typeahead.js')
   
   body
@@ -18,7 +23,7 @@ html
               div.control-group
                 label.control-label(for="to") Hey,
                 div.controls
-                  input.span6.typeahead.input-xlarge(type="text", name="to", id="to", data-provide="typeahead")
+                  input.span6.typeahead.input-xlarge(type="text", name="to", id="to", data-provide="typeahead", data-source="#{item.friends}")
               div.control-group
                 label.control-label(for="question") I want to ask you
                 div.controls
@@ -26,8 +31,3 @@ html
               div.form-actions
                 button#btn_ask.btn.btn-primary(type="submit") Ask away
                 button#btn_cancel.btn Cancel
-
-    script
-      $(function() {
-        $('.typeahead').typeahead({source: #{item.friends}});
-      });

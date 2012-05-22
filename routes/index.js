@@ -115,11 +115,12 @@ exports.v1 = {
 				};
 				items.create(l, function(err, r){
 					if (!err) {
-						var friends = [];
+						var f = [];
 						if (req.session.fb.friends) {
 							req.session.fb.friends.forEach(function(i){
-								friends.push(i.name);
+								f.push(i.name); 
 							});
+							var friends = JSON.stringify(f);
 						}
 						res.render('api_item_prev', {locals: {
 							item: {
