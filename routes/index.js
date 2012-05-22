@@ -23,7 +23,7 @@ exports.index = function(req, res){
 	} else {
 		items.view({view: 'all'}, function(err, posts){
 			if (!err) {
-				res.render('index', {locals: {posts: posts}});
+				res.render('index', {locals: {user: req.fb.user.name || 'Visitor', posts: posts}});
 			} else {
 				res.render('error', {locals: {error: err}});
 			}
