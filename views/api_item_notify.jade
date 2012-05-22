@@ -1,0 +1,76 @@
+!!! 5
+html
+  head
+    link(rel='stylesheet', href='http://codengage.com/css/bootstrap.min.css')
+    script(type='text/javascript', src='http://codengage.com/js/jquery.min.js')
+    script(type='text/javascript', src='http://codengage.com/socket.io/socket.io.js')
+    script(type='text/javascript', src='http://codengage.com/js/bootstrap-typeahead.js')
+  
+  body
+    #container
+      #content.row
+        #thumbnail.span3
+          a.thumb(href="#")
+            img(src="#{item.media}")
+            p #{item.title}
+        #q.span6
+          form.form-horizontal(action="#")
+            fieldset
+              div.control-group
+                label.control-label(for="to") Hey,
+                div.controls
+                  input.span6.typeahead.input-xlarge(type="text", name="to", id="to", data-provide="typeahead")
+              div.control-group
+                label.control-label(for="question") I want to ask you
+                div.controls
+                  textarea.span6.input-xlarge(name="question", id="question", rows="3")
+              div.form-actions
+                button#btn_ask.btn.btn-primary(type="submit") Ask away
+                button#btn_cancel.btn Cancel
+
+    script
+      var oldContent = null;
+      var socket = io.connect();
+
+      socket.on('connect', function() {
+        console.log('connecting to server');
+      });
+
+      socket.on('reconnect', function() {
+        console.log('reconnecting to server');
+      });
+
+      socket.on('reconnecting', function() {
+        console.log('still trying to reconnect');
+      });
+
+      $(function() {
+        $('.typeahead').typeahead({source: #{item.friends}});
+
+        $('#container').on('click', '#notify', function(ev) {
+          ev.preventDefault();
+          socket.emit('subscribe', #{item.id});
+          socket.on('notify', function(data){
+            //handle notification to the browser
+          });
+        });
+
+        $('#container').on('click', 'btn_ask', function(ev) {
+          ev.preventDefault();
+          socket.emit('/api/v1/ask/create', {
+            item_id: #{item.id},
+            to: $('#to').val(),
+            question: $('#question').val();
+          }, function(resp) {
+            if ('error' in resp) {
+              if (oldContent) {
+                oldContent.appendTo('#container');
+                oldContent = null
+              }
+            } else {
+              oldContent = $('#content').detach();
+              resp.body.appendTo('#container');
+            }
+          });
+        });
+      });
