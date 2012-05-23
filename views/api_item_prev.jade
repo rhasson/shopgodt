@@ -12,23 +12,22 @@ html
   body
     #container
       #content.row
-        div.span12
+        div.span6
           div.row
-            #thumbnail.span6
+            #thumbnail.span3
               a.thumb(href="#")
                 img(src="#{item.media}")
-                p #{item.title}
-            #q.span6
+            #q.span3
               form.form-horizontal(method="POST", action="http://codengage.com/api/v1/ask/#{item.id}")
                 fieldset
                   div.control-group
                     label.control-label(for="to") Hey,
                     div.controls
-                      input.span6.typeahead.input-xlarge(type="text", style="margin: 0 auto;", name="to", id="to", data-provide="typeahead", data-source="#{item.friends}")
+                      input.span4.typeahead.input-xlarge(type="text", style="margin: 0 auto;", name="to", id="to", data-provide="typeahead", data-source="#{item.friends}")
                   div.control-group
-                    label.control-label(for="question") I want to ask you
+                    label.control-label(for="question") I want to ask you...
                     div.controls
-                      textarea.span6.input-xlarge(name="question", id="question", rows="3")
-                  div.form-actions
+                      textarea.span5.input-xlarge(name="question", id="question", rows="3")
+                  div.form-actions(style="background-color: white; border-top: none")
                     button#btn_ask.btn.btn-primary(type="submit") Ask away
                     button#btn_cancel.btn Cancel
