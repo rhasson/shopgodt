@@ -54,12 +54,14 @@ app.get('/', routes.index);  //render a login page instead of index
 app.get('/login', routes.auth.login);
 app.get('/logout', fb.logout());
 app.get('/register', routes.register);
+app.get('/item/:item_id', routes.getItem);
 
 /** Access API Routes **/
 // item routes
-app.get('/api/v1/item/create', routes.auth.requiresAuth, fb.getFriends(), routes.v1.item.create);
+app.get('/api/v1/item/preview', routes.auth.requiresAuth, routes.v1.item.preview, fb.getFriends());
+app.post('/api/v1/item', routes.auth.requiresAuth, routes.v1.item.create);
 //question routes
-app.post('/api/v1/ask/:item_id', routes.auth.requiresAuth, routes.v1.ask.create);
+app.post('/api/v1/ask/:item_id', routes.auth.requiresAuth, routes.v1.ask.create, fb.post());
 //utility routes
 app.get('/api/v1/domains/info', routes.v1.domains_info);
 app.get('/api/v1/util/embed', routes.v1.embed);

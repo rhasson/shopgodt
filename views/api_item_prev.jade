@@ -6,28 +6,64 @@ html
     link(rel='stylesheet', href='http://codengage.com/css/bootstrap.min.css')
 
     script(type='text/javascript', src='http://codengage.com/js/jquery.min.js')
-    script(type='text/javascript', src='http://codengage.com/js/bootstrap.min.js')
-    script(type='text/javascript', src='http://codengage.com/js/bootstrap-typeahead.js')
-  
+
   body
     #container
       #content.row
         div.span6
           div.row
-            #thumbnail.span3
+            #thumb.span3
               a.thumb(href="#")
                 img(src="#{item.media}")
-            #q.span3
-              form.form-vertical(method="POST", action="http://codengage.com/api/v1/ask/#{item.id}")
+            #cat.span3
+              form#cat_form.form-vertical(method="POST", action="")
                 fieldset
                   div.control-group
-                    label.control-label(for="to") Hey,
+                    label.control-label(for="category") Select a category
                     div.controls
-                      input.span4.typeahead.input-xlarge(type="text", style="margin: 0 auto;", name="to", id="to", data-provide="typeahead", data-source="#{item.friends}")
+                      select#category.span4
+                        option(value="clothing") Clothing
+                        option(value="shoes") Shoes
+                        option(value="electronics") Electronics
                   div.control-group
-                    label.control-label(for="question") I want to ask you...
+                    label.control-label(for="tags") Want to add some tags
                     div.controls
-                      textarea.span5.input-xlarge(name="question", id="question", rows="3")
-                  div.form-actions(style="background-color: white; border-top: none")
-                    button#btn_ask.btn.btn-primary(type="submit") Ask away
-                    button#btn_cancel.btn Cancel
+                      input.span5.input-xlarge(name="tags", id="tags")
+          div.row
+            #save.span3
+              a#btn_save.btn.btn-large(href="#")
+                i.icon-bookmark Save
+            #share.span3
+              a#btn_share.btn.btn-large(href="#")
+                i.icon-share Ask a friend
+
+    script
+      $(function() {
+        $('#container').on('click', 'btn_save', function(ev) {
+          ev.preventDefault();
+          var f = $('#cat_form');
+          $(f).attr('action', 'http://codengage.com/api/v1/item');
+          $(f).submit();
+          // $.post('http://codengage.com/api/v1/item', $('#cat_form').serializeArray(), success);
+        });
+
+        $('#container').on('click', 'btn_share', function(ev) {
+          ev.preventDefault();
+          var f = $('#cat_form');
+          $(f).attr('action', 'http://codengage.com/api/v1/item?next=share');
+          $(f).submit();
+          // $.post('http://codengage.com/api/v1/item/share', $('#cat_form').serializeArray(), success);
+        });
+
+        function success(data){
+          var elm = $('.alert-error');
+          if ('error' in data) {
+            $(elm).html(data.error.message)
+            $(elm).removeClass('hidden');
+          } else {
+            if (!$(elm).hasClass('hidden')) $(elm).addClass('hidden');
+            window.location(data.url);
+          }
+        }
+
+      });

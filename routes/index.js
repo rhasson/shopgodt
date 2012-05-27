@@ -4,8 +4,8 @@ var auth = require('../lib/auth').auth,  //handle authentication
 //	profile = require('../lib/profiles').profiles,  //handle access to user profiles
 	Access = require('../lib/access');
 	db = require('../lib/db').db,
-	util = require('util');
-//	cache = require('redis').createClient();
+	util = require('util'),
+	cache = require('redis').createClient();
 
 var items = new Access('item');
 var profiles = new Access('profile');
@@ -30,6 +30,17 @@ exports.index = function(req, res){
 		});
 	}
 };
+
+exports.getItem = function(req, res, next) {
+	items.view({view: 'byItemId', key: req.params.item_id}, function(err, item) {
+		var user = req.session.fb ? req.session.fb.user.name || 'Visitor';
+		if (!err) {
+			res.render('item', {locals: {user: user, item: item}});
+		} else {
+			res.render('error', {locals: {user: user, error: err}});
+		}
+	});
+}
 
 exports.auth = {
 	facebook_cb: function(req, res, next) {
@@ -98,66 +109,90 @@ exports.v1 = {
 	},
 
 	item: {
-		create: function(req, res) {
-//			cache.hget('sessions', req.sessionId, function(err, value) {
-//				var v = value.split(':');
-				var l = {
-					fb_id: req.session.fb.fb_id,//v[1],
-					profile_id: req.session.fb.profile_id,//v[0],
-					type: 'item',
-					private: true,
-					media: req.query.media.trim(),
-					url: req.query.url,
-					title: req.query.title,
-					desc: req.query.description,
-					is_video: req.query.is_video,
-					via: req.query.via || ''
-				};
-				items.create(l, function(err, r){
-					if (!err) {
-						var f = [];
-						if (req.session.fb.friends) {
-							req.session.fb.friends.forEach(function(i){
-								f.push(i.name); 
-							});
-							var friends = JSON.stringify(f);
+		preview: function(req, res, next) {
+			var l = {
+				fb_id: req.session.fb.fb_id,//v[1],
+				profile_id: req.session.fb.profile_id,//v[0],
+				type: 'item',
+				private: false,
+				media: req.query.media.trim(),
+				url: req.query.url,
+				title: req.query.title,
+				desc: req.query.description,
+				is_video: req.query.is_video,
+				via: req.query.via || ''
+			};
+			cache.hset('pins', req.session.fb.fb_id, JSON.stringify(l));
+			res.render('api_item_prev', {locals: { item: { media: l.media }	}, layout: false});
+			next();
+		},
+
+		create: function(req, res, next) {
+			cache.hget('pins', req.session.fb.fb_id, function(e, data) {
+				if (!e) {
+					var l = JSON.parse(data);
+					l.category = req.body.category;
+					l.tags = req.body.tags || '';
+					items.create(l, function(err, r){
+						if (!err) {
+							l.item_id = r.id;
+							cache.hset('pins', req.session.fb.fb_id, JSON.stringify(l));
+							var f = [];
+							if (req.session.fb.friends) {
+								req.session.fb.friends.forEach(function(i){
+									f.push(i.name); 
+								});
+								var friends = JSON.stringify(f);
+							}
+							if (req.query.next === 'share') {
+								res.render('api_item_ask', {locals: {
+									item: {
+										id: r.id, 
+										title: l.title, 
+										media: l.media,
+										friends: friends
+									}}, layout: false});
+							} else {
+								res.render('success', {layout: false});
+							}
+						} else {
+							res.render('error', {locals: {error: err}, layout: false});
 						}
-						res.render('api_item_prev', {locals: {
-							item: {
-								id: r.id, 
-								title: l.title, 
-								media: l.media,
-								friends: friends
-							}}, layout: false});
-					} else {
-						res.render('error', {locals: {error: err}, layout: false});
-					}
-				});
-//			});
+					});
+				}
+			});
 		}
 	}, 
 
 	ask: {
-		create: function(req, res) {
-//			cache.hget('sessions', req.sessionId, function(err, value) {
-//				var v = value.split(':');
-				var l = {
-					fb_id: req.session.fb.fb_id,//v[1],
-					profile_id: req.session.fb.profile_id,//v[0],
-					item_id: req.params.item_id,
-					type: 'question',
-					private: false,
-					to: req.body.to,
-					question: req.body.question
-				};
-				questions.create(l, function(err, r) {
-					if (!err) {
-						res.render('success', {layout: false});
-					} else {
-						res.render('error', {locals: {error: err}, layout: false});
-					}
-				});
-//			});
+		create: function(req, res, next) {
+			var l = {
+				fb_id: req.session.fb.fb_id,
+				profile_id: req.session.fb.profile_id,
+				item_id: req.params.item_id,
+				type: 'question',
+				private: false,
+				to: req.body.to,
+				question: req.body.question
+			};
+			var friends = req.session.fb.friends;
+			for (var x=0, y, len = friends.length; x < len; x++) {
+				y = friends[i];
+				if (y.name === l.to) {
+					l.to_id = y.id;
+					break;
+				}
+			}
+			questions.create(l, function(err, r) {
+				if (!err) {
+					l.question_id = r.id;
+					cache.hset('questions', req.session.fb.fb_id, JSON.stringify(l));
+					next();
+					res.render('api_item_notify', {locals: {}, layout: false});
+				} else {
+					res.render('error', {locals: {error: err}, layout: false});
+				}
+			});
 		}
 	}
 };

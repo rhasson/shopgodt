@@ -567,9 +567,9 @@
         url: "http://codengage.com/api/v1/domains/info/"
     },
     embed: "http://codengage.com/api/v1/util/embed/?",
-    pin: "codengage.com/api/v1/item/create/",
-    minImgSize: 30,  //80
-    thumbCellSize: 50,  //200
+    pin: "codengage.com/api/v1/item/preview/",
+    minImgSize: 80,
+    thumbCellSize: 200,
     check: ["meta", "iframe", "embed", "object", "img", "video", "a"],
     url: {
         vimeo: /^https?:\/\/vimeo\.com\//,

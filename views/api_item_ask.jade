@@ -1,0 +1,33 @@
+!!! 5
+html
+  head
+    meta(name='viewport', content='width=device-width')
+
+    link(rel='stylesheet', href='http://codengage.com/css/bootstrap.min.css')
+
+    script(type='text/javascript', src='http://codengage.com/js/jquery.min.js')
+    script(type='text/javascript', src='http://codengage.com/js/bootstrap.min.js')
+    script(type='text/javascript', src='http://codengage.com/js/bootstrap-typeahead.js')
+  
+  body
+    #container
+      #content.row
+        div.span6
+          div.row
+            #thumbnail.span3
+              a.thumb(href="#")
+                img(src="#{item.media}")
+            #q.span3
+              form.form-vertical(autocomplete="off", method="POST", action="http://codengage.com/api/v1/ask/#{item.id}")
+                fieldset
+                  div.control-group
+                    label.control-label(for="to") Hey,
+                    div.controls
+                      input.span4.typeahead.input-xlarge(type="text", autocomplete="off", style="margin: 0 auto;", name="to", id="to", data-provide="typeahead", data-source="#{item.friends}")
+                  div.control-group
+                    label.control-label(for="question") I want to ask you...
+                    div.controls
+                      textarea.span5.input-xlarge(name="question", id="question", rows="3")
+                  div.form-actions(style="background-color: white; border-top: none")
+                    button#btn_ask.btn.btn-primary(type="submit") Ask away
+                    button#btn_cancel.btn Cancel
