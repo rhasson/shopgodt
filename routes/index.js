@@ -31,17 +31,6 @@ exports.index = function(req, res){
 	}
 };
 
-exports.getItem = function(req, res, next) {
-	items.view({view: 'byItemId', key: req.params.item_id}, function(err, item) {
-		var user = req.session.fb ? req.session.fb.user.name || 'Visitor';
-		if (!err) {
-			res.render('item', {locals: {user: user, item: item}});
-		} else {
-			res.render('error', {locals: {user: user, error: err}});
-		}
-	});
-}
-
 exports.auth = {
 	facebook_cb: function(req, res, next) {
 		if (req.isAuthenticated()) {		
@@ -161,7 +150,18 @@ exports.v1 = {
 					});
 				}
 			});
-		}
+		},
+
+		get: function(req, res, next) {
+			items.view({view: 'byId', key: req.params.item_id}, function(err, item) {
+				var user = req.session.fb ? req.session.fb.user.name || 'Visitor';
+				if (!err) {
+					res.render('item', {locals: {user: user, item: item}});
+				} else {
+					res.render('error', {locals: {user: user, error: err}});
+				}
+			});
+		}		
 	}, 
 
 	ask: {
@@ -188,9 +188,19 @@ exports.v1 = {
 					l.question_id = r.id;
 					cache.hset('questions', req.session.fb.fb_id, JSON.stringify(l));
 					next();
-					res.render('api_item_notify', {locals: {}, layout: false});
 				} else {
 					res.render('error', {locals: {error: err}, layout: false});
+				}
+			});
+		}
+	},
+
+	notify: {
+		ask: function(req, res, next) {
+			cache.hget('questions', req.session.fb.fb_id, function(err, data) {
+				if (!err) {
+					var d = JSON.parse(data);
+					res.render('api_item_notify', {locals: {item_id: d.item_id, question_id: d.question_id}, layout: false});
 				}
 			});
 		}
