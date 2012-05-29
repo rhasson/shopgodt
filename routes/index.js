@@ -154,7 +154,7 @@ exports.v1 = {
 
 		get: function(req, res, next) {
 			items.view({view: 'byId', key: req.params.item_id}, function(err, item) {
-				var user = req.session.fb ? req.session.fb.user.name || 'Visitor';
+				var user = req.session.fb ? req.session.fb.user.name : 'Visitor';
 				if (!err) {
 					res.render('item', {locals: {user: user, item: item}});
 				} else {
