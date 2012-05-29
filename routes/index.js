@@ -38,7 +38,7 @@ exports.auth = {
 				if (!err2) {
 					//id = profile_doc_id : fb_id : access_token
 					
-					req.session.fb.profile_id = doc.doc_id;
+					req.session.fb.profile_id = doc.id;
 					req.session.fb.fb_id = doc.fb_id;
 //					cache.hset('sessions', req.sessionId, doc+':'+req.session.fb.access_token, function(err) {
 					if (req.session.return_uri) {
@@ -123,7 +123,7 @@ exports.v1 = {
 					l.category = req.body.category;
 					l.tags = req.body.tags || '';
 					items.create(l, function(err, r){
-						if (!err) {
+						if (!err && r.ok) {
 							l.item_id = r.id;
 							cache.hset('pins', req.session.fb.fb_id, JSON.stringify(l));
 							var f = [];
@@ -133,7 +133,7 @@ exports.v1 = {
 								});
 								var friends = JSON.stringify(f);
 							}
-							if (req.query.next === 'share') {
+							if (req.body.next === 'share') {
 								res.render('api_item_ask', {locals: {
 									item: {
 										id: r.id, 
@@ -184,7 +184,7 @@ exports.v1 = {
 				}
 			}
 			questions.create(l, function(err, r) {
-				if (!err) {
+				if (!err && r.ok) {
 					l.question_id = r.id;
 					cache.hset('questions', req.session.fb.fb_id, JSON.stringify(l));
 					next();
@@ -197,12 +197,14 @@ exports.v1 = {
 
 	notify: {
 		ask: function(req, res, next) {
-			cache.hget('questions', req.session.fb.fb_id, function(err, data) {
-				if (!err) {
-					var d = JSON.parse(data);
-					res.render('api_item_notify', {locals: {item_id: d.item_id, question_id: d.question_id}, layout: false});
-				}
-			});
+			if (!(req.session.fb.wall_post instanceof Error)) {
+				cache.hget('questions', req.session.fb.fb_id, function(err, data) {
+					if (!err) {
+						var d = JSON.parse(data);
+						res.render('api_item_notify', {locals: {item_id: d.item_id, question_id: d.question_id}, layout: false});
+					}
+				});
+			}
 		}
 	}
 };

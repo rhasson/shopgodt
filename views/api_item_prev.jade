@@ -50,7 +50,13 @@ html
         $('#container').on('click', 'btn_share', function(ev) {
           ev.preventDefault();
           var f = $('#cat_form');
-          $(f).attr('action', 'http://codengage.com/api/v1/item?next=share');
+          $('<input>').attr({
+            type: 'hidden',
+            id: 'next',
+            name: 'next',
+            value: 'share'
+          }).appendTo('#cat_form');
+          $(f).attr('action', 'http://codengage.com/api/v1/item');
           $(f).submit();
           // $.post('http://codengage.com/api/v1/item/share', $('#cat_form').serializeArray(), success);
         });
