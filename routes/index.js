@@ -197,6 +197,7 @@ exports.v1 = {
 
 	notify: {
 		ask: function(req, res, next) {
+			/*
 			if (!(req.session.fb.wall_post instanceof Error)) {
 				cache.hget('questions', req.session.fb.fb_id, function(err, data) {
 					if (!err) {
@@ -204,7 +205,11 @@ exports.v1 = {
 						res.render('api_item_notify', {locals: {item_id: d.item_id, question_id: d.question_id}, layout: false});
 					}
 				});
+			} else {
+				res.render('success', {layout: false});
 			}
+			*/
+			res.render('success', {layout: false});
 		}
 	}
 };
