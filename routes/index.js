@@ -122,7 +122,8 @@ exports.v1 = {
 							cache.hget('friends', req.session.fb.fb_id, function(err2,body) {
 								if (!err2 && body) {
 									d = JSON.parse(body);
-									d.forEach(function(i){
+									//ERROR
+									d.data.forEach(function(i){
 										f.push(i.name); 
 									});
 									friends = JSON.stringify(f);
