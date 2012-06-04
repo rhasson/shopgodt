@@ -33,25 +33,16 @@ exports.index = function(req, res){
 
 exports.auth = {
 	facebook_cb: function(req, res, next) {
-		if (req.isAuthenticated()) {		
+		if (!req.session.fb.profile_id) {
 			profiles.create(req.session.fb.user, function(err2, doc) {
-				if (!err2) {
-					//id = profile_doc_id : fb_id : access_token
-					
+				if (!err2) {					
 					req.session.fb.profile_id = doc.id;
 					req.session.fb.fb_id = doc.fb_id;
-//					cache.hset('sessions', req.sessionId, doc+':'+req.session.fb.access_token, function(err) {
 					if (req.session.return_uri) {
 						var u = req.session.return_uri
 						req.session.return_uri = null;
 						res.redirect(u);
 					} else res.redirect('/');
-//					});
-/*					req.session.user = {
-						profile_id: doc,
-						access_token: req.session.fb.access_token
-					};
-*/
 				}
 			});
 		}
