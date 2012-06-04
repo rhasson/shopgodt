@@ -122,7 +122,6 @@ exports.v1 = {
 							cache.hget('friends', req.session.fb.fb_id, function(err2,body) {
 								if (!err2 && body) {
 									d = JSON.parse(body).data;
-									//ERROR
 									d.forEach(function(i){
 										f.push(i.name); 
 									});
@@ -176,7 +175,7 @@ exports.v1 = {
 				if (body) {
 					friends = JSON.parse(body).data;
 					for (var x=0, y, len = friends.length; x < len; x++) {
-						y = friends[i];
+						y = friends[x];
 						if (y.name === l.to) {
 							l.to_id = y.id;
 							break;
