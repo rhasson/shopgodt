@@ -167,11 +167,13 @@ exports.v1 = {
 				question: req.body.question
 			};
 			var friends = req.session.fb.friends;
-			for (var x=0, y, len = friends.length; x < len; x++) {
-				y = friends[i];
-				if (y.name === l.to) {
-					l.to_id = y.id;
-					break;
+			if (friends) {
+				for (var x=0, y, len = friends.length; x < len; x++) {
+					y = friends[i];
+					if (y.name === l.to) {
+						l.to_id = y.id;
+						break;
+					}
 				}
 			}
 			questions.create(l, function(err, r) {
