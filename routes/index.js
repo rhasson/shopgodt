@@ -121,9 +121,9 @@ exports.v1 = {
 							var friends = '';
 							cache.hget('friends', req.session.fb.fb_id, function(err2,body) {
 								if (!err2 && body) {
-									d = JSON.parse(body);
+									d = JSON.parse(body).data;
 									//ERROR
-									d.data.forEach(function(i){
+									d.forEach(function(i){
 										f.push(i.name); 
 									});
 									friends = JSON.stringify(f);
@@ -171,10 +171,10 @@ exports.v1 = {
 				to: req.body.to,
 				question: req.body.question
 			};
-			var friends = '';
+			var friends = null;
 			cache.hget('friends', req.session.fb.fb_id, function(err, body) {
-				friends = JSON.parse(body);
-				if (friends) {
+				if (body) {
+					friends = JSON.parse(body).data;
 					for (var x=0, y, len = friends.length; x < len; x++) {
 						y = friends[i];
 						if (y.name === l.to) {
