@@ -2,7 +2,7 @@
 var auth = require('../lib/auth').auth,  //handle authentication
 //	items = require('../lib/items').items,  //handle access to items posted
 //	profile = require('../lib/profiles').profiles,  //handle access to user profiles
-	Access = require('../lib/access');
+	Access = require('../lib/access'),
 	db = require('../lib/db').db,
 	util = require('util'),
 	cache = require('redis').createClient();
@@ -117,24 +117,28 @@ exports.v1 = {
 						if (!err && r.ok) {
 							l.item_id = r.id;
 							cache.hset('pins', req.session.fb.fb_id, JSON.stringify(l));
-							var f = [];
-							if (req.session.fb.friends) {
-								req.session.fb.friends.forEach(function(i){
-									f.push(i.name); 
-								});
-								var friends = JSON.stringify(f);
-							}
-							if (req.body.next === 'share') {
-								res.render('api_item_ask', {locals: {
-									item: {
-										id: r.id, 
-										title: l.title, 
-										media: l.media,
-										friends: friends
-									}}, layout: false});
-							} else {
-								res.render('success', {layout: false});
-							}
+							var f = [], d = '';
+							var friends = '';
+							cache.hget('friends', req.session.fb.fb_id, function(err2,body) {
+								if (!err2 && body) {
+									d = JSON.parse(body);
+									d.forEach(function(i){
+										f.push(i.name); 
+									});
+									friends = JSON.stringify(f);
+								}
+								if (req.body.next === 'share') {
+									res.render('api_item_ask', {locals: {
+										item: {
+											id: r.id, 
+											title: l.title, 
+											media: l.media,
+											friends: friends
+										}}, layout: false});
+								} else {
+									res.render('success', {layout: false});
+								}
+							});
 						} else {
 							res.render('error', {locals: {error: err}, layout: false});
 						}
@@ -166,24 +170,27 @@ exports.v1 = {
 				to: req.body.to,
 				question: req.body.question
 			};
-			var friends = req.session.fb.friends;
-			if (friends) {
-				for (var x=0, y, len = friends.length; x < len; x++) {
-					y = friends[i];
-					if (y.name === l.to) {
-						l.to_id = y.id;
-						break;
+			var friends = '';
+			cache.hget('friends', req.session.fb.fb_id, function(err, body) {
+				friends = JSON.parse(body);
+				if (friends) {
+					for (var x=0, y, len = friends.length; x < len; x++) {
+						y = friends[i];
+						if (y.name === l.to) {
+							l.to_id = y.id;
+							break;
+						}
 					}
 				}
-			}
-			questions.create(l, function(err, r) {
-				if (!err && r.ok) {
-					l.question_id = r.id;
-					cache.hset('questions', req.session.fb.fb_id, JSON.stringify(l));
-					next();
-				} else {
-					res.render('error', {locals: {error: err}, layout: false});
-				}
+				questions.create(l, function(err, r) {
+					if (!err && r.ok) {
+						l.question_id = r.id;
+						cache.hset('questions', req.session.fb.fb_id, JSON.stringify(l));
+						next();
+					} else {
+						res.render('error', {locals: {error: err}, layout: false});
+					}
+				});
 			});
 		}
 	},
