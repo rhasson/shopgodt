@@ -16,12 +16,12 @@ html
               a.thumb(href="#")
                 img(src="#{item.media}")
             #cat.span3
-              form#cat_form.form-vertical(method="POST", action="")
+              form#cat_form.form-vertical(method="POST", action="#")
                 fieldset
                   div.control-group
                     label.control-label(for="category") Select a category
                     div.controls
-                      select#category.span4
+                      select#category.span4(name="category")
                         option(value="clothing") Clothing
                         option(value="shoes") Shoes
                         option(value="electronics") Electronics
@@ -41,7 +41,7 @@ html
 
     script
       $(function() {
-        $('#container').on('click', 'btn_save', function(ev) {
+        $('#btn_save').on('click', function(ev) {
           ev.preventDefault();
           var f = $('#cat_form');
           $(f).attr('action', 'http://codengage.com/api/v1/item');
@@ -49,7 +49,7 @@ html
           // $.post('http://codengage.com/api/v1/item', $('#cat_form').serializeArray(), success);
         });
 
-        $('#container').on('click', 'btn_share', function(ev) {
+        $('#btn_share').on('click', function(ev) {
           ev.preventDefault();
           var f = $('#cat_form');
           $('<input>').attr({
