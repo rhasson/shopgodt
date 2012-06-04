@@ -29,20 +29,24 @@ html
                     div.controls
                       textarea.span5.input-xlarge(name="question", id="question", rows="3")
                   div.form-actions(style="background-color: white; border-top: none")
-                    a#btn_ask.btn.btn-large(href="#")
-                      i.icon-share
-                      | Ask away
-                    a#btn_cancel.btn.btn-large(href="#")
-                      i.icon-ban-circle
-                      | Cancel
+                    div.span2
+                      a#btn_ask.btn.btn-large(href="#")
+                        i.icon-share
+                        | Ask away
+                    div.span2
+                      a#btn_cancel.btn.btn-large(href="#")
+                        i.icon-ban-circle
+                        | Cancel
 
     script
-      $('#btn_ask').on('click', function(ev) {
-        ev.preventDefault();
-        $('form').submit();
-      });
-      
-      $('#btn_cancel').on('click', function(ev) {
-        ev.preventDefault();
-        close();
+      $(function() {
+        $('#btn_ask').on('click', function(ev) {
+          ev.preventDefault();
+          $('form').submit();
+        });
+
+        $('#btn_cancel').on('click', function(ev) {
+          ev.preventDefault();
+          close();
+        });
       });

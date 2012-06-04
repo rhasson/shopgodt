@@ -29,15 +29,15 @@ html
                     label.control-label(for="tags") Want to add some tags
                     div.controls
                       input.span5.input-xlarge(name="tags", id="tags")
-          div.row
-            #save.span3
-              a#btn_save.btn.btn-large(href="#")
-                i.icon-bookmark
-                | Save
-            #share.span3
-              a#btn_share.btn.btn-large(href="#")
-                i.icon-share
-                | Ask a friend
+                  div.form-actions(style="background-color: white; border-top: none")
+                    div.span2
+                      a#btn_share.btn.btn-large(href="#")
+                        i.icon-share
+                        | Ask a friend
+                    div.span2
+                      a#btn_save.btn.btn-large(href="#")
+                        i.icon-bookmark
+                        | Save
 
     script
       $(function() {
@@ -46,7 +46,6 @@ html
           var f = $('#cat_form');
           $(f).attr('action', 'http://codengage.com/api/v1/item');
           $(f).submit();
-          // $.post('http://codengage.com/api/v1/item', $('#cat_form').serializeArray(), success);
         });
 
         $('#btn_share').on('click', function(ev) {
@@ -60,18 +59,5 @@ html
           }).appendTo('#cat_form');
           $(f).attr('action', 'http://codengage.com/api/v1/item');
           $(f).submit();
-          // $.post('http://codengage.com/api/v1/item/share', $('#cat_form').serializeArray(), success);
         });
-
-        function success(data){
-          var elm = $('.alert-error');
-          if ('error' in data) {
-            $(elm).html(data.error.message)
-            $(elm).removeClass('hidden');
-          } else {
-            if (!$(elm).hasClass('hidden')) $(elm).addClass('hidden');
-            window.location(data.url);
-          }
-        }
-
       });
