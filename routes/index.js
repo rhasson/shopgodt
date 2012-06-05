@@ -209,6 +209,7 @@ exports.v1 = {
 				res.render('success', {layout: false});
 			}
 			*/
+			console.log(req.session.fb);
 			res.render('success', {layout: false});
 		}
 	}
