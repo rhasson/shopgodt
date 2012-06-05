@@ -1,19 +1,17 @@
 //routes
 var auth = require('../lib/auth').auth,  //handle authentication
-//	items = require('../lib/items').items,  //handle access to items posted
-//	profile = require('../lib/profiles').profiles,  //handle access to user profiles
 	Access = require('../lib/access'),
 	db = require('../lib/db').db,
 	util = require('util'),
 	cache = require('redis').createClient();
 
-var items = new Access('item');
-var profiles = new Access('profile');
-var questions = new Access('question');
+req.session.items = req.session.items || new Access('item');
+req.session.profiles = req.session.profiles || new Access('profile');
+req.session.questions = req.session.questions || new Access('question');
 
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {	
-		items.view({view: 'byFbId', key: req.session.fb.user.id}, function(err, posts) {
+		req.session.items.view({view: 'byFbId', key: req.session.fb.user.id}, function(err, posts) {
 			if (!err) {
 				res.render('index', {locals: {user: req.session.fb.user.name, id: req.session.fb.fb_id, posts: posts}});
 			} else {
@@ -21,7 +19,7 @@ exports.index = function(req, res){
 			}
 		});
 	} else {
-		items.view({view: 'all'}, function(err, posts){
+		req.session.items.view({view: 'all'}, function(err, posts){
 			if (!err) {
 				res.render('index', {locals: {user: 'Visitor', posts: posts}});
 			} else {
@@ -34,7 +32,7 @@ exports.index = function(req, res){
 exports.auth = {
 	facebook_cb: function(req, res, next) {
 		if (!req.session.fb.profile_id) {
-			profiles.create(req.session.fb.user, function(err2, doc) {
+			req.session.profiles.create(req.session.fb.user, function(err2, doc) {
 				if (!err2) {					
 					req.session.fb.profile_id = doc.id;
 					req.session.fb.fb_id = doc.fb_id;
@@ -113,7 +111,7 @@ exports.v1 = {
 					var l = JSON.parse(data);
 					l.category = req.body.category;
 					l.tags = req.body.tags || '';
-					items.create(l, function(err, r){
+					req.session.items.create(l, function(err, r){
 						if (!err && r.ok) {
 							l.item_id = r.id;
 							cache.hset('pins', req.session.fb.fb_id, JSON.stringify(l));
@@ -148,7 +146,7 @@ exports.v1 = {
 		},
 
 		get: function(req, res, next) {
-			items.get(req.params.item_id, function(err, item) {
+			req.session.items.get(req.params.item_id, function(err, item) {
 				var user = req.session.fb ? req.session.fb.user.name : 'Visitor';
 				if (!err) {
 					res.render('item', {locals: {user: user, id: item.fb_id, item: item}});
@@ -182,7 +180,7 @@ exports.v1 = {
 						}
 					}
 				}
-				questions.create(l, function(err, r) {
+				req.session.questions.create(l, function(err, r) {
 					if (!err && r.ok) {
 						l.question_id = r.id;
 						cache.hset('questions', req.session.fb.fb_id, JSON.stringify(l));
@@ -217,7 +215,7 @@ exports.v1 = {
 					} else {
 						q.fb_post_id = req.session.fb.wall_post;
 					}
-					questions.update({id: q.question_id, body: q}, function(e, doc) {
+					req.session.questions.update({id: q.question_id, body: q}, function(e, doc) {
 						if (!e) {
 							if (q.fb_post_id) res.render('success', {layout: false});
 							else res.render('error', {locals: {error: req.session.fb.wall_post.message}, layout: false});
