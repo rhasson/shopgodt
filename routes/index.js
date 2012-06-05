@@ -15,7 +15,7 @@ exports.index = function(req, res){
 			if (!err) {
 				res.render('index', {locals: {user: req.session.fb.user.name, id: req.session.fb.fb_id, posts: posts}});
 			} else {
-				res.render('error', {locals: {user: 'Visitor', error: err}});
+				res.render('error', {locals: {user: 'Visitor', id: null, error: err}});
 			}
 		});
 	} else {
@@ -23,7 +23,7 @@ exports.index = function(req, res){
 			if (!err) {
 				res.render('index', {locals: {user: 'Visitor', posts: posts}});
 			} else {
-				res.render('error', {locals: {user: 'Visitor', error: err}});
+				res.render('error', {locals: {user: 'Visitor', id: null, error: err}});
 			}
 		});
 	}
@@ -151,7 +151,7 @@ exports.v1 = {
 				if (!err) {
 					res.render('item', {locals: {user: user, id: item.fb_id, item: item}});
 				} else {
-					res.render('error', {locals: {user: user, error: err}});
+					res.render('error', {locals: {user: user, id: null, error: err}});
 				}
 			});
 		}		
