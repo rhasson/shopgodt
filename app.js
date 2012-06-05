@@ -10,7 +10,6 @@ var express = require('express'),
     routes = require('./routes'),
     Facebook = require('./lib/fb_api'),
     db = require('./lib/db').db,
-    Access = require('./lib/access'),
     RedisStore = require('connect-redis')(express);
 
 var app = module.exports = express.createServer();
@@ -33,7 +32,6 @@ app.configure(function(){
   app.use(express.session({secret: 'testing this stuff', store: new RedisStore}));
   app.use(express.methodOverride());
   app.use(fb.init());
-  app.use(accessInit());
   app.use(app.router);
   app.enable("jsonp callback");
   app.use(express.static(__dirname + '/public'));
@@ -77,13 +75,3 @@ app.get('/auth/facebook/logout', fb.logout());
 app.listen(app_config.server.port, app_config.server.host, function(){
   console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
 });
-
-function accessInit() {
-  return function accessInit(req, res, next) {
-    
-    req.session.items = req.session.items || new Access('item');
-    req.session.profiles = req.session.profiles || new Access('profile');
-    req.session.questions = req.session.questions || new Access('question');
-    next();
-  }
-}
