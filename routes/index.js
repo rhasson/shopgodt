@@ -1,13 +1,13 @@
 //routes
 var auth = require('../lib/auth').auth,  //handle authentication
-	Access = require('../lib/access'),
+//	Access = require('../lib/access'),
 	db = require('../lib/db').db,
 	util = require('util'),
 	cache = require('redis').createClient();
 
-req.session.items = req.session.items || new Access('item');
-req.session.profiles = req.session.profiles || new Access('profile');
-req.session.questions = req.session.questions || new Access('question');
+//req.session.items = req.session.items || new Access('item');
+//req.session.profiles = req.session.profiles || new Access('profile');
+//req.session.questions = req.session.questions || new Access('question');
 
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {	
