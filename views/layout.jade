@@ -33,7 +33,9 @@ html
                   li(class='dropdown hidden')
                 else
                   li(class='dropdown')
-                    a(id='welcome_name', href='#', class='dropdown-toggle', data-toggle='dropdown') #{user}
+                    a(id='welcome_name', href='#', class='dropdown-toggle', data-toggle='dropdown')
+                      - if (id) img(src='https://graph.facebook.com/#{id)/picture?type=square') #{user}
+                      - else #{user}
                       b.caret
                     ul.dropdown-menu
                       li: a(href='/profiles/show') Profile

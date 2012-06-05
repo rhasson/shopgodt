@@ -15,7 +15,7 @@ exports.index = function(req, res){
 	if (req.isAuthenticated()) {	
 		items.view({view: 'byFbId', key: req.session.fb.user.id}, function(err, posts) {
 			if (!err) {
-				res.render('index', {locals: {user: req.session.fb.user.name, posts: posts}});
+				res.render('index', {locals: {user: req.session.fb.user.name, id: req.session.fb.fb_id, posts: posts}});
 			} else {
 				res.render('error', {locals: {user: 'Visitor', error: err}});
 			}
@@ -151,7 +151,7 @@ exports.v1 = {
 			items.view({view: 'byId', key: req.params.item_id}, function(err, item) {
 				var user = req.session.fb ? req.session.fb.user.name : 'Visitor';
 				if (!err) {
-					res.render('item', {locals: {user: user, item: item}});
+					res.render('item', {locals: {user: user, id: req.session.fb.fb_id, item: item}});
 				} else {
 					res.render('error', {locals: {user: user, error: err}});
 				}
@@ -209,8 +209,22 @@ exports.v1 = {
 				res.render('success', {layout: false});
 			}
 			*/
-			console.log(req.session.fb);
-			res.render('success', {layout: false});
+			cache.hget('questions', req.session.fb.fb_id, function(err, data) {
+				if (!err && data) {
+					var q = JSON.parse(data);
+					if (req.session.fb.wall_post instanceof Error) {
+						q.fb_post_id = null;
+					} else {
+						q.fb_post_id = req.session.fb.wall_post;
+					}
+					questions.update({id: q.question_id, body: q}, function(e, doc) {
+						if (!e) {
+							if (q.fb_post_id) res.render('success', {layout: false});
+							else res.render('error', {locals: {error: req.session.fb.wall_post.message}, layout: false});
+						}
+					});
+				}
+			});
 		}
 	}
 };
