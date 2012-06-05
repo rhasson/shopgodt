@@ -80,6 +80,7 @@ app.listen(app_config.server.port, app_config.server.host, function(){
 
 function accessInit() {
   return function accessInit(req, res, next) {
+    
     req.session.items = req.session.items || new Access('item');
     req.session.profiles = req.session.profiles || new Access('profile');
     req.session.questions = req.session.questions || new Access('question');
