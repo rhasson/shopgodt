@@ -148,10 +148,10 @@ exports.v1 = {
 		},
 
 		get: function(req, res, next) {
-			items.view({view: 'byId', key: req.params.item_id}, function(err, item) {
+			items.get(req.params.item_id, function(err, item) {
 				var user = req.session.fb ? req.session.fb.user.name : 'Visitor';
 				if (!err) {
-					res.render('item', {locals: {user: user, id: req.session.fb.fb_id, item: item}});
+					res.render('item', {locals: {user: user, id: item.fb_id, item: item}});
 				} else {
 					res.render('error', {locals: {user: user, error: err}});
 				}
