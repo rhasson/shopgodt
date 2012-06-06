@@ -31,18 +31,20 @@ exports.index = function(req, res){
 
 exports.auth = {
 	facebook_cb: function(req, res, next) {
-		if (!req.session.fb.profile_id) {
-			profiles.create(req.session.fb.user, function(err2, doc) {
-				if (!err2) {					
-					req.session.fb.profile_id = doc.id;
-					req.session.fb.fb_id = doc.fb_id;
-					if (req.session.return_uri) {
-						var u = req.session.return_uri
-						req.session.return_uri = null;
-						res.redirect(u);
-					} else res.redirect('/');
-				}
-			});
+		if (!(req.session.fb instanceof Error)) {
+			if (!req.session.fb.profile_id) {
+				profiles.create(req.session.fb.user, function(err2, doc) {
+					if (!err2) {					
+						req.session.fb.profile_id = doc.id;
+						req.session.fb.fb_id = doc.fb_id;
+						if (req.session.return_uri) {
+							var u = req.session.return_uri
+							req.session.return_uri = null;
+							res.redirect(u);
+						} else res.redirect('/');
+					}
+				});
+			}
 		}
 	},
 	fb_redirect: function(req, res, next) {
