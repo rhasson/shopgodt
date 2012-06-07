@@ -54,7 +54,7 @@ app.get('/', routes.index);  //render a login page instead of index
 app.get('/login', routes.auth.login);
 app.get('/logout', fb.logout());
 app.get('/register', routes.register);
-app.get('/:item_id', routes.v1.item.get);
+app.get('/item/:item_id', routes.v1.item.get);
 
 /** Access API Routes **/
 // item routes
