@@ -150,7 +150,7 @@ exports.v1 = {
 		get: function(req, res, next) {
 			var user = 'Visitor';
 			items.get(req.params.item_id, function(err, item) {
-				if (req.session && req.session.fb) user = req.session.fb.user.name;
+				if (req.session.fb && req.session.fb.user) user = req.session.fb.user.name;
 				if (!err) {
 					res.render('item', {locals: {user: user, id: item.fb_id, item: item}});
 				} else {

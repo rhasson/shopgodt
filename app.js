@@ -62,6 +62,7 @@ app.get('/api/v1/item/preview', routes.auth.requiresAuth, routes.v1.item.preview
 app.post('/api/v1/item', routes.auth.requiresAuth, routes.v1.item.create);
 //question routes
 app.post('/api/v1/ask/:item_id', routes.auth.requiresAuth, routes.v1.ask.create, fb.post(), routes.v1.notify.ask);
+app.get('/api/v1/ask/:item_id', fb.post(), routes.v1.notify.ask);
 //utility routes
 app.get('/api/v1/domains/info', routes.v1.domains_info);
 app.get('/api/v1/util/embed', routes.v1.embed);
