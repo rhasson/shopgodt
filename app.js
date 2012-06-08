@@ -20,7 +20,7 @@ var fb = new Facebook({
   app_id: app_config.fb.app_id,
   app_secret: app_config.fb.app_secret,
   redirect_uri: "http://codengage.com/auth/facebook/callback",
-  scope: ['email', 'publish_actions', 'read_stream', 'manage_notifications']
+  scope: ['email', 'publish_stream', 'read_stream', 'manage_notifications']
 });
 
 /* Server Configuration */
