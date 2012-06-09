@@ -1,0 +1,36 @@
+link(rel='stylesheet', href='/css/mosaic.css')
+script(src="/js/mosaic.1.0.1.min.js")
+
+div
+  div.content
+
+    mixin thumb(item)
+      div.mosaic-block.item.span4
+        a.mosaic-overlay(href="http://codengage.com/item/#{item._id}")
+          div.details
+            h4 #{item.title}
+            p #{item.desc}
+            p #{item.tags}
+        div.mosaic-backdrop
+          img(src="#{item.media}")
+
+    - var c = 0
+    - if (posts.length > 0)
+      div.well
+        div.row
+          - for (var i in posts) {
+          - c = i
+          - if (c == 3) {
+          - c = 0
+        div.row
+          - }
+          mixin thumb(posts[i].value)
+          - }
+
+script
+  $(function() {
+    $('.item').mosiac({
+      opacity: 0.8,
+      animation: 'slide'
+    })
+  });

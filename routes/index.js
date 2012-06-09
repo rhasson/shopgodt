@@ -13,7 +13,7 @@ exports.index = function(req, res){
 	if (req.isAuthenticated()) {	
 		items.view({view: 'byFbId', key: req.session.fb.user.id}, function(err, posts) {
 			if (!err) {
-				res.render('index', {locals: {user: req.session.fb.user.name, id: req.session.fb.fb_id, posts: posts}});
+				res.render('index2', {locals: {user: req.session.fb.user.name, id: req.session.fb.fb_id, posts: posts}});
 			} else {
 				res.render('error', {locals: {user: 'Visitor', id: null, error: err}});
 			}
@@ -21,7 +21,7 @@ exports.index = function(req, res){
 	} else {
 		items.view({view: 'all'}, function(err, posts){
 			if (!err) {
-				res.render('index', {locals: {user: 'Visitor', posts: posts}});
+				res.render('index2', {locals: {user: 'Visitor', posts: posts}});
 			} else {
 				res.render('error', {locals: {user: 'Visitor', id: null, error: err}});
 			}
