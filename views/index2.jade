@@ -4,7 +4,7 @@ div
   div.content
 
     mixin thumb(item)
-      div.mosaic-block.item.span4
+      div.span4.mosaic-block.item
         a.mosaic-overlay(href="http://codengage.com/item/#{item._id}")
           div.details
             h4 #{item.title}
@@ -31,5 +31,5 @@ script
     $('.item').mosiac({
       opacity: 0.8,
       animation: 'slide'
-    })
+    });
   });
