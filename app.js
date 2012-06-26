@@ -25,6 +25,7 @@ var fb = new Facebook({
 
 /* Server Configuration */
 app.configure(function(){
+  app.use(express.logger());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
   app.use(express.bodyParser());

@@ -9,6 +9,9 @@ items = new Access('item');
 profiles = new Access('profile');
 questions = new Access('question');
 
+var DOMAIN = 'http://codenage.com/';
+var THUMB_PATH = 'public/img/user_thumbs/';
+
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {	
 		items.view({view: 'byFbId', key: req.session.fb.user.id}, function(err, posts) {
@@ -113,35 +116,43 @@ exports.v1 = {
 					var l = JSON.parse(data);
 					l.category = req.body.category;
 					l.tags = req.body.tags || '';
-					items.create(l, function(err, r){
-						if (!err && r.ok) {
-							l.item_id = r.id;
-							cache.hset('pins', req.session.fb.fb_id, JSON.stringify(l));
-							var f = [], d = '';
-							var friends = '';
-							cache.hget('friends', req.session.fb.fb_id, function(err2,body) {
-								if (!err2 && body) {
-									d = JSON.parse(body).data;
-									d.forEach(function(i){
-										f.push(i.name); 
-									});
-									friends = JSON.stringify(f);
-								}
-								if (req.body.next === 'share') {
-									res.render('api_item_ask', {locals: {
-										item: {
-											id: r.id, 
-											title: l.title, 
-											media: l.media,
-											friends: friends
-										}}, layout: false});
-								} else {
-									res.render('success', {layout: false});
-								}
-							});
-						} else {
-							res.render('error', {locals: {error: err}, layout: false});
-						}
+
+					var image = require('../lib/image');
+					image.resize(l.media, 260, 180, function(re_err, re_img){
+						l.img_src = DOMAIN+THUMB_PATH+re_img;
+						items.create(l, function(err, r){
+							if (!err && r.ok) {
+								l.item_id = r.id;
+								cache.hset('pins', req.session.fb.fb_id, JSON.stringify(l));
+								var f = [], d = '';
+								var friends = '';
+								cache.hget('friends', req.session.fb.fb_id, function(err2,body) {
+									if (!err2 && body) {
+										d = JSON.parse(body).data;
+										d.forEach(function(i){
+											f.push(i.name); 
+										});
+										friends = JSON.stringify(f);
+									}
+									if (req.body.next === 'share') {
+										image = null;
+										res.render('api_item_ask', {locals: {
+											item: {
+												id: r.id, 
+												title: l.title, 
+												media: l.img_src,
+												friends: friends
+											}}, layout: false});
+									} else {
+										image = null;
+										res.render('success', {layout: false});
+									}
+								});
+							} else {
+								image = null;
+								res.render('error', {locals: {error: err}, layout: false});
+							}
+						});
 					});
 				}
 			});
