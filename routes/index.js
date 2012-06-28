@@ -3,20 +3,21 @@ var auth = require('../lib/auth').auth,  //handle authentication
 	db = require('../lib/db').db,
 	util = require('util'),
 	Access = require('../lib/access'),
-	cache = require('redis').createClient();
+	cache = require('redis').createClient(),
+	path = require('path');
 
 items = new Access('item');
 profiles = new Access('profile');
 questions = new Access('question');
 
-var DOMAIN = 'http://codenage.com/';
-var THUMB_PATH = 'public/img/user_thumbs/';
+var DOMAIN = 'http://codengage.com';
+var THUMB_PATH = '/img/user_thumbs';
 
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {	
 		items.view({view: 'byFbId', key: req.session.fb.user.id}, function(err, posts) {
 			if (!err) {
-				res.render('index2', {locals: {user: req.session.fb.user.name, id: req.session.fb.fb_id, posts: posts}});
+				res.render('index', {locals: {user: req.session.fb.user.name, id: req.session.fb.fb_id, posts: posts}});
 			} else {
 				res.render('error', {locals: {user: 'Visitor', id: null, error: err}});
 			}
@@ -24,7 +25,7 @@ exports.index = function(req, res){
 	} else {
 		items.view({view: 'all'}, function(err, posts){
 			if (!err) {
-				res.render('index2', {locals: {user: 'Visitor', posts: posts}});
+				res.render('index', {locals: {user: 'Visitor', posts: posts}});
 			} else {
 				res.render('error', {locals: {user: 'Visitor', id: null, error: err}});
 			}
@@ -119,7 +120,7 @@ exports.v1 = {
 
 					var image = require('../lib/image');
 					image.resize(l.media, 260, 180, function(re_err, re_img){
-						l.img_src = DOMAIN+THUMB_PATH+re_img;
+						l.img_src = path.join(THUMB_PATH, re_img);
 						items.create(l, function(err, r){
 							if (!err && r.ok) {
 								l.item_id = r.id;
@@ -140,7 +141,7 @@ exports.v1 = {
 											item: {
 												id: r.id, 
 												title: l.title, 
-												media: l.img_src,
+												media: l.media,
 												friends: friends
 											}}, layout: false});
 									} else {
