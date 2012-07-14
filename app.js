@@ -60,7 +60,7 @@ app.get('/item/:item_id', routes.v1.item.get);
 /** Access API Routes **/
 // item routes
 app.get('/api/v1/item/preview', routes.auth.requiresAuth, routes.v1.item.preview, fb.getFriends());
-app.post('/api/v1/item', routes.auth.requiresAuth, routes.v1.item.create);
+app.post('/api/v1/item', routes.auth.requiresAuth, routes.v1.item.create, routes.v1.item.scrape);
 //question routes
 app.post('/api/v1/ask/:item_id', routes.auth.requiresAuth, routes.v1.ask.create, fb.post(), routes.v1.notify.ask);
 app.get('/api/v1/ask/:item_id', fb.post(), routes.v1.notify.ask);

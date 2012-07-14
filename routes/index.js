@@ -4,11 +4,14 @@ var auth = require('../lib/auth').auth,  //handle authentication
 	util = require('util'),
 	Access = require('../lib/access'),
 	cache = require('redis').createClient(),
-	path = require('path');
+	path = require('path'),
+	scraper = require('../lib/scraper');
 
-items = new Access('item');
-profiles = new Access('profile');
-questions = new Access('question');
+var items = new Access('item');
+var profiles = new Access('profile');
+var questions = new Access('question');
+
+scraper.init();
 
 var DOMAIN = 'http://codengage.com';
 var THUMB_PATH = '/img/user_thumbs';
@@ -169,7 +172,46 @@ exports.v1 = {
 					res.render('error', {locals: {user: user, id: null, error: err}});
 				}
 			});
-		}		
+		},
+
+		scrape: function(req, res, next) {
+			cache.hget('pins', req.session.fb.fb_id, function(err, pin) {
+				if (!err && data !== null) {
+					var u = JSON.parse(pin);
+					if (scraper.isReady()) {
+						_scrape(u.url, function(e, d) {
+							if (!e) {
+								//do something with the parsed data
+							}
+						});
+					} else {
+						scraper.on('ready', function(count) {
+							_scrape(u.url, function(e, d) {
+								if (!e) {
+									//do something with the parsed data
+								}
+							});
+						});
+						scraper.init();
+					}
+				}
+			});
+
+			function _scrape(url, cb) {
+				scraper.create(url, function(err, child) {
+					if (!err) {
+						child.stdout.on('data', function(data){
+                            var d = JSON.parse(data.toString());
+                            return cb(null, d);
+                        });
+                        child.on('error', function(e) {
+                        	console.log(e);
+                        	return cb(e);
+                        });
+					}
+				});
+			}
+		}	
 	}, 
 
 	ask: {
