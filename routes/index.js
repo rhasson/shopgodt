@@ -147,9 +147,11 @@ exports.v1 = {
 												media: l.media,
 												friends: friends
 											}}, layout: false});
+										next();
 									} else {
 										image = null;
 										res.render('success', {layout: false});
+										next();
 									}
 								});
 							} else {
@@ -176,19 +178,21 @@ exports.v1 = {
 
 		scrape: function(req, res, next) {
 			cache.hget('pins', req.session.fb.fb_id, function(err, pin) {
-				if (!err && data !== null) {
+				if (!err && pin !== null) {
 					var u = JSON.parse(pin);
 					if (scraper.isReady()) {
 						_scrape(u.url, function(e, d) {
 							if (!e) {
-								//do something with the parsed data
+								u.parsed_name = d.name;
+								cache.hset('pins', req.session.fb.fb_id, JSON.stringify(u));
 							}
 						});
 					} else {
 						scraper.on('ready', function(count) {
 							_scrape(u.url, function(e, d) {
 								if (!e) {
-									//do something with the parsed data
+									pin.parsed_name = d.name;
+									cache.hset('pins', req.session.fb.fb_id, JSON.stringify(pins));
 								}
 							});
 						});
@@ -199,13 +203,19 @@ exports.v1 = {
 
 			function _scrape(url, cb) {
 				scraper.create(url, function(err, child) {
+					var data = null;
+					console.log('SCRAPER CREATE: ', err);
 					if (!err) {
-						child.stdout.on('data', function(data){
-                            var d = JSON.parse(data.toString());
-                            return cb(null, d);
+                        child.stderr.on('data', function(e) {
+                        	console.log('SCRAPER ERROR: ', e.toString());
+                        	return cb(e);
+                        });
+                        child.on('msg', function(d) {
+                        	var z = JSON.parse(d);
+                        	return cb(null, z);
                         });
                         child.on('error', function(e) {
-                        	console.log(e);
+                        	console.log('SCRAPER ERROR: ', e);
                         	return cb(e);
                         });
 					}

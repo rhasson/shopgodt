@@ -15,7 +15,6 @@ div
           li Drag the "ShopGodt" button to your Bookmarks bar
           li When you are browsing the web, push the "ShopGodt" button to compare with your friends
 
-
 mixin thumb(item)
   div.span3
     div.thumbnail
@@ -24,21 +23,19 @@ mixin thumb(item)
         h5 #{item.title}
         p #{item.desc}
         p #{item.tags}
-        p: a.btn Compare
 
 - var c = 0
+- var i = 0
 - if (posts.length > 0)
   div.well
     div.content
       div.row
-        - for (var i in posts) {
-        - c = i
-        - if (c == 3) {
-        - c = 0
-      div.row
-        - }
-        mixin thumb(posts[i].value)
-        - }
+        each item, i in posts
+          c = i
+          if c == 3
+            c = 0
+            div.row
+          mixin thumb(item.value)
 
 script(src="js/bootstrap-transition.js")
 script(src="js/bootstrap-collapse.js")
