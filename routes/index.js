@@ -2,19 +2,28 @@
 var auth = require('../lib/auth').auth,  //handle authentication
 	db = require('../lib/db').db,
 	util = require('util'),
+	app_config = require('../config/app_config').app_config,
 	Access = require('../lib/access'),
 	cache = require('redis').createClient(),
 	path = require('path'),
-	scraper = require('../lib/scraper');
+	Facebook = require('../lib/fb_api'),
+	scraper = require('../lib/scraper'),
 
-var items = new Access('item');
-var profiles = new Access('profile');
-var questions = new Access('question');
+	DOMAIN = 'http://codengage.com',
+	THUMB_PATH = '/img/user_thumbs',
+
+	items = new Access('item'),
+	profiles = new Access('profile'),
+	questions = new Access('question'),
+
+	fb = new Facebook({
+	  app_id: app_config.fb.app_id,
+	  app_secret: app_config.fb.app_secret,
+	  redirect_uri: app_config.fb.redirect_uri,
+	  scope: app_config.fb.scope
+	});
 
 scraper.init();
-
-var DOMAIN = 'http://codengage.com';
-var THUMB_PATH = '/img/user_thumbs';
 
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {	
@@ -38,6 +47,7 @@ exports.index = function(req, res){
 
 exports.auth = {
 	facebook_cb: function(req, res, next) {
+		console.log('INSIDE CB');
 		if (!(req.session.fb instanceof Error)) {
 			if (!req.session.fb.profile_id) {
 				profiles.create(req.session.fb.user, function(err2, doc) {
@@ -55,14 +65,28 @@ exports.auth = {
 		}
 	},
 	fb_redirect: function(req, res, next) {
+		fb.redirect(req, function(err, user) {
+			console.log('USER: ', user);
+			if (!err && user) next();
+		});
 	},
 
 	login: function(req, res) {
 		res.render('login', {locals: {user: 'Visitor'}});
 	},
+	fb_login: function(req, res) {
+		fb.login(function(err, url) {
+			console.log('URL: ', url);
+			if (!err) res.redirect(url);
+		});
+	},
 	logout: function(req, res) {
-		//cache.hdel('sessions', req.sessionId);
-		res.redirect('/auth/facebook/logout');
+		//fb.logout(req, opt, cb)
+		fb.logout(req, function(err, url) {
+			if (!err) res.redirect(url);
+			else res.render('error', {locals: {user: 'Visitor', error: err}});
+		});
+		//res.redirect('/auth/facebook/logout');
 	},
 	requiresAuth: function(req, res, next) {
 		if (req.isAuthenticated()) next();
@@ -111,7 +135,7 @@ exports.v1 = {
 			};
 			cache.hset('pins', req.session.fb.fb_id, JSON.stringify(l));
 			res.render('api_item_prev', {locals: { item: { media: l.media }	}, layout: false});
-			next();
+			fb.getFriends(req);
 		},
 
 		create: function(req, res, next) {
@@ -169,7 +193,23 @@ exports.v1 = {
 			items.get(req.params.item_id, function(err, item) {
 				if (req.session.fb && req.session.fb.user) user = req.session.fb.user.name;
 				if (!err) {
-					res.render('item', {locals: {user: user, id: item.fb_id, item: item}});
+					cache.hget('questions', req.session.fb.fb_id, function(err2, question) {
+						if (!err2 && question) {
+							var q = JSON.parse(question);
+
+							cache.hget('comments', q.fb_post_id, function(err3, comments) {
+								if (!err3 && comments) {
+									var c = JSON.parse(comments);
+									console.log('GET COMMENTS: ', c);
+								}
+								res.render('item', {locals: {user: user,
+									id: item.fb_id,
+									item: item,
+									comments: c } }
+								);
+							});
+						}
+					});
 				} else {
 					res.render('error', {locals: {user: user, id: null, error: err}});
 				}
@@ -236,6 +276,8 @@ exports.v1 = {
 				question: req.body.question
 			};
 			var friends = null;
+			var ret = false;
+			
 			cache.hget('friends', req.session.fb.fb_id, function(err, body) {
 				if (body) {
 					friends = JSON.parse(body).data;
@@ -247,14 +289,42 @@ exports.v1 = {
 						}
 					}
 				}
-				questions.create(l, function(err, r) {
-					if (!err && r.ok) {
-						l.question_id = r.id;
-						cache.hset('questions', req.session.fb.fb_id, JSON.stringify(l));
-						next();
+
+				fb.post(req, l, function(e, post_id) {
+					if (!e) {
+						l.fb_post_id = post_id;
+						//req.session.fb.wall_post = post_id;
+					} else if (e instanceof Error) {
+						console.log('Failed to post question to FB');
 					} else {
-						res.render('error', {locals: {error: err}, layout: false});
+						if (e.error.type === 'OAuthException') {
+							switch (e.error.code) {
+						 		case 190: 
+						 			if (e.error.error_subcode === 467) {
+										req.session.fb = {};
+										req.session.return_uri = req.url;
+										ret = true;
+									}
+								case 200:
+									//user didn't authorize the application to post
+									//req.session.fb.wall_post = new Error(e.error.message);
+							}
+						} else {
+							//req.session.fb.wall_post = new Error(e.error.message);
+						}
 					}
+					questions.create(l, function(err, r) {
+						if (!err && r.ok) {
+							l.question_id = r.id;
+							cache.hset('questions', req.session.fb.fb_id, JSON.stringify(l));
+							if (ret) {
+								res.render('login_api', {layout: false});
+								ret = false
+							} else res.render('success', {layout: false});
+						} else {
+							res.render('error', {locals: {error: err}, layout: false});
+						}
+					});
 				});
 			});
 		}
@@ -273,7 +343,7 @@ exports.v1 = {
 			} else {
 				res.render('success', {layout: false});
 			}
-			*/
+			
 			cache.hget('questions', req.session.fb.fb_id, function(err, data) {
 				if (!err && data) {
 					var q = JSON.parse(data);
@@ -284,12 +354,15 @@ exports.v1 = {
 					}
 					questions.update({id: q.question_id, body: q}, function(e, doc) {
 						if (!e) {
-							if (q.fb_post_id) res.render('success', {layout: false});
+							if (q.fb_post_id) {
+								res.render('success', {layout: false});
+								cache.hset('questions', req.session.fb.fb_id, JSON.stringify(q));
+							}
 							else res.render('error', {locals: {error: req.session.fb.wall_post.message}, layout: false});
 						}
 					});
 				}
-			});
+			}); */
 		}
 	}
 };

@@ -6,5 +6,5 @@ log/
 Thumbs.db
 
 tmp/
-public/img/user_thumbs/
+public/img/user_thumbs/*
 node_modules/
