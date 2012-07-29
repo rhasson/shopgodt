@@ -47,7 +47,6 @@ exports.index = function(req, res){
 
 exports.auth = {
 	facebook_cb: function(req, res, next) {
-		console.log('INSIDE CB');
 		if (!(req.session.fb instanceof Error)) {
 			if (!req.session.fb.profile_id) {
 				profiles.create(req.session.fb.user, function(err2, doc) {
@@ -66,7 +65,6 @@ exports.auth = {
 	},
 	fb_redirect: function(req, res, next) {
 		fb.redirect(req, function(err, user) {
-			console.log('USER: ', user);
 			if (!err && user) next();
 		});
 	},
@@ -218,21 +216,38 @@ exports.v1 = {
 
 		scrape: function(req, res, next) {
 			cache.hget('pins', req.session.fb.fb_id, function(err, pin) {
+				var u  = '';
+
 				if (!err && pin !== null) {
-					var u = JSON.parse(pin);
+					u = JSON.parse(pin);
 					if (scraper.isReady()) {
 						_scrape(u.url, function(e, d) {
+							var params = null;
 							if (!e) {
-								u.parsed_name = d.name;
-								cache.hset('pins', req.session.fb.fb_id, JSON.stringify(u));
+								u.parsed_data = d;
+								params = {
+									id: u.item_id,
+									body: u
+								};
+								items.update(params, function(err2, doc){
+									if (u.parsed_data.reviews) delete u.parsed_data.reviews;
+									if (!err2 && doc.ok) cache.hset('pins', req.session.fb.fb_id, JSON.stringify(u));
+								});
 							}
 						});
 					} else {
 						scraper.on('ready', function(count) {
 							_scrape(u.url, function(e, d) {
 								if (!e) {
-									pin.parsed_name = d.name;
-									cache.hset('pins', req.session.fb.fb_id, JSON.stringify(pins));
+									u.parsed_data = d
+									params = {
+										id: u.item_id,
+										body: u
+									};
+									items.update(params, function(err2, doc){
+										if (u.parsed_data.reviews) delete u.parsed_data.reviews;
+										if (!err2 && doc.ok) cache.hset('pins', req.session.fb.fb_id, JSON.stringify(u));
+									});
 								}
 							});
 						});

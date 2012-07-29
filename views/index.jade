@@ -20,7 +20,11 @@ mixin thumb(item)
     div.thumbnail
       img.thumb(src="#{item.img_src}", alt)
       div.caption
+      - if (item.parsed_data) {
+        h5 #{item.parsed_data.name}
+      - } else {
         h5 #{item.title}
+      - }
         p #{item.desc}
         p #{item.tags}
 
