@@ -27,7 +27,7 @@ scraper.init();
 
 exports.index = function(req, res){
 	if (req.isAuthenticated()) {	
-		items.view({view: 'byFbId', key: req.session.fb.user.id}, function(err, posts) {
+		items.view({view: 'byFbIdShared', key: req.session.fb.user.id}, function(err, posts) {
 			if (!err) {
 				res.render('index', {locals: {user: req.session.fb.user.name, id: req.session.fb.fb_id, posts: posts}});
 			} else {
@@ -35,7 +35,7 @@ exports.index = function(req, res){
 			}
 		});
 	} else {
-		items.view({view: 'all'}, function(err, posts){
+		items.view({view: 'allNotShared'}, function(err, posts){
 			if (!err) {
 				res.render('index', {locals: {user: 'Visitor', posts: posts}});
 			} else {
@@ -146,6 +146,8 @@ exports.v1 = {
 					var image = require('../lib/image');
 					image.resize(l.media, 260, 180, function(re_err, re_img){
 						l.img_src = path.join(THUMB_PATH, re_img);
+						if (req.body.next === 'share') l.shared = true;
+						else l.shared = false;
 						items.create(l, function(err, r){
 							if (!err && r.ok) {
 								l.item_id = r.id;
@@ -188,23 +190,40 @@ exports.v1 = {
 
 		get: function(req, res, next) {
 			var user = 'Visitor';
+
 			items.get(req.params.item_id, function(err, item) {
 				if (req.session.fb && req.session.fb.user) user = req.session.fb.user.name;
 				if (!err) {
-					cache.hget('questions', req.session.fb.fb_id, function(err2, question) {
+					questions.get(item.question_id, function(err2, question) {
 						if (!err2 && question) {
-							var q = JSON.parse(question);
-
-							cache.hget('comments', q.fb_post_id, function(err3, comments) {
-								if (!err3 && comments) {
-									var c = JSON.parse(comments);
-									console.log('GET COMMENTS: ', c);
-								}
-								res.render('item', {locals: {user: user,
+							if (item.fb_id === req.session.fb.fb_id) {
+								fb.getComments(req, question.fb_post_id, function(err3, c) {
+									if ((!err3 || !err3.error) && c) {
+										res.render('item', {locals: {
+											user: user,
+											id: item.fb_id,
+											item: item,
+											question: question,
+											comments: c }
+										});
+									}
+								});
+							} else {
+								res.render('item', {locals: {
+									user: user,
 									id: item.fb_id,
 									item: item,
-									comments: c } }
-								);
+									question: question,
+									comments: {} }
+								});
+							}
+						} else {
+							res.render('item', {locals: {
+								user: user,
+								id: item.fb_id,
+								item: item,
+								question: {},
+								comments: {} }
 							});
 						}
 					});
@@ -261,15 +280,15 @@ exports.v1 = {
 					var data = null;
 					console.log('SCRAPER CREATE: ', err);
 					if (!err) {
-                        child.stderr.on('data', function(e) {
+                        child.stderr.once('data', function(e) {
                         	console.log('SCRAPER ERROR: ', e.toString());
                         	return cb(e);
                         });
-                        child.on('msg', function(d) {
+                        child.once('msg', function(d) {
                         	var z = JSON.parse(d);
                         	return cb(null, z);
                         });
-                        child.on('error', function(e) {
+                        child.once('error', function(e) {
                         	console.log('SCRAPER ERROR: ', e);
                         	return cb(e);
                         });

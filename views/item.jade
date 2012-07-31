@@ -7,10 +7,31 @@ div
           div.thumbnail
             img.thumb(src="#{item.img_src}", alt)
           div.caption
+          - if (item.parsed_data) {
+            h5 #{item.parsed_data.name}
+          - } else {
             h5 #{item.title}
+          - }
             p #{item.category}
             p #{item.tags}
-            p: a.btn Compare
+    - if (qustion.length > 0) {
+      div.row
+        div.span6
+          div.question
+            p #{question.question}
+    - }
+    - if (comments.length > 0) {
+      div.row
+        div.span6
+          div.comments
+            ul
+              each val in comments
+                li 
+                  div.#{val.id}
+                    span #{val.from.name}:
+                    span #{val.message}
+                    span #{val.created_time}
+    -}
 
 script(src="js/bootstrap-transition.js")
 script(src="js/bootstrap-collapse.js")
