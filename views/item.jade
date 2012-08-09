@@ -14,24 +14,36 @@ div
           - }
             p #{item.category}
             p #{item.tags}
-    - if (qustion.length > 0) {
+    - if (question.length > 0) {
       div.row
         div.span6
           div.question
             p #{question.question}
     - }
-    - if (comments.length > 0) {
+    - if (question.comments.length > 0) {
       div.row
         div.span6
           div.comments
             ul
-              each val in comments
+              each val in question.comments
                 li 
                   div.#{val.id}
                     span #{val.from.name}:
                     span #{val.message}
                     span #{val.created_time}
     -}
+    - if (prices.length > 0) {
+      div.row
+        div.span6
+          div.prices
+            ul
+              each val in prices
+                li
+                  span: h3 $#{val.price}
+                  span
+                    h6
+                      a(href="#{val.url}") #{val.retailer}
+    - }
 
 script(src="js/bootstrap-transition.js")
 script(src="js/bootstrap-collapse.js")

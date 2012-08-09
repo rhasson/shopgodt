@@ -4,10 +4,12 @@ var auth = require('../lib/auth').auth,  //handle authentication
 	util = require('util'),
 	app_config = require('../config/app_config').app_config,
 	Access = require('../lib/access'),
+	accessext = require('../lib/accessext.js'),
 	cache = require('redis').createClient(),
 	path = require('path'),
 	Facebook = require('../lib/fb_api'),
 	scraper = require('../lib/scraper'),
+	async = require('async'),
 
 	DOMAIN = 'http://codengage.com',
 	THUMB_PATH = '/img/user_thumbs',
@@ -190,42 +192,58 @@ exports.v1 = {
 
 		get: function(req, res, next) {
 			var user = 'Visitor';
-
-			items.get(req.params.item_id, function(err, item) {
-				if (req.session.fb && req.session.fb.user) user = req.session.fb.user.name;
-				if (!err) {
-					questions.get(item.question_id, function(err2, question) {
-						if (!err2 && question) {
-							if (item.fb_id === req.session.fb.fb_id) {
-								fb.getComments(req, question.fb_post_id, function(err3, c) {
-									if ((!err3 || !err3.error) && c) {
-										res.render('item', {locals: {
-											user: user,
-											id: item.fb_id,
-											item: item,
-											question: question,
-											comments: c }
-										});
-									}
-								});
-							} else {
-								res.render('item', {locals: {
-									user: user,
-									id: item.fb_id,
-									item: item,
-									question: question,
-									comments: {} }
-								});
-							}
-						} else {
-							res.render('item', {locals: {
-								user: user,
-								id: item.fb_id,
-								item: item,
-								question: {},
-								comments: {} }
+			var prodItem = {};
+			async.waterfall([
+				function(cb) {
+					items.get(req.params.item_id, function(err, item) {
+						if (!err) {
+							if (req.session.fb && req.session.fb.user) user = req.session.fb.user.name;
+							prodItem.item = item;
+							cb(null, item);
+						} else cb(err);
+					});
+				},
+				function(item, cb) {
+					questions.get(item.question_id, function(err, question) {
+						if (!err) {
+							prodItem.question = question;
+							cb(null, question, item);
+						} else cb(err);
+					});
+				},
+				function(question, item, cb) {
+					if (req.session.fb && Object.keys(req.session.fb).length > 0) {
+						if (item.fb_id === req.session.fb.fb_id) {
+							fb.getComments(req, question.fb_post_id, function(err, c) {
+								if ((!err || !err.error) && c) {
+									prodItem.question.comments = c.comments.data;
+									cb(null, item);
+								} else cb(err);
 							});
 						}
+					} else { 
+						prodItem.question.comments = [];
+						cb(null, item);
+					}
+				},
+				function(item, cb) {
+					accessext.getPrices(item.parsed_data.name, function(err, prices) {
+						if (!err) {
+							prodItem.prices = prices;
+							cb(null, item);
+						} else cb(err);
+					});
+				}
+			], function(err, result) {
+				console.log('WATERFALL: ', err, prodItem);
+				if (!err && result) {
+					res.render('item', {locals: {
+						user: user,
+						id: prodItem.item.fb_id,
+						item: prodItem.item,
+						question: prodItem.question,
+						prices: prodItem.prices,
+						comments:  prodItem.comments}
 					});
 				} else {
 					res.render('error', {locals: {user: user, id: null, error: err}});
@@ -252,7 +270,7 @@ exports.v1 = {
 									if (u.parsed_data.reviews) delete u.parsed_data.reviews;
 									if (!err2 && doc.ok) cache.hset('pins', req.session.fb.fb_id, JSON.stringify(u));
 								});
-							}
+							} else console.log('_SCRAPE ERR: ', e);
 						});
 					} else {
 						scraper.on('ready', function(count) {
@@ -285,11 +303,12 @@ exports.v1 = {
                         	return cb(e);
                         });
                         child.once('msg', function(d) {
+                        	console.log('SCRAPER DATA: ', d);
                         	var z = JSON.parse(d);
                         	return cb(null, z);
                         });
                         child.once('error', function(e) {
-                        	console.log('SCRAPER ERROR: ', e);
+                        	console.log('CHILD ERROR: ', e);
                         	return cb(e);
                         });
 					}
@@ -348,8 +367,20 @@ exports.v1 = {
 						}
 					}
 					questions.create(l, function(err, r) {
+						var params;
 						if (!err && r.ok) {
 							l.question_id = r.id;
+							items.get(l.item_id, function(err2, item) {
+								if (!err2) {
+									params = {
+										id: l.item_id,
+										body: {question_id: l.question_id}
+									}
+									items.update(params, function(e, doc) {
+										//if (!e && doc.ok)
+									});
+								}
+							})
 							cache.hset('questions', req.session.fb.fb_id, JSON.stringify(l));
 							if (ret) {
 								res.render('login_api', {layout: false});
