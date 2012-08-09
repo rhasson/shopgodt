@@ -27,10 +27,9 @@ div
             ul
               each val in question.comments
                 li 
-                  div.#{val.id}
-                    span #{val.from.name}:
-                    span #{val.message}
-                    span #{val.created_time}
+                  div(id="#{val.id}")
+                    span: h3 #{val.message}
+                    span: h5 #{val.from.name}
     -}
     - if (prices.length > 0) {
       div.row

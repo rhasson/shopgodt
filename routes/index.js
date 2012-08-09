@@ -216,7 +216,8 @@ exports.v1 = {
 						if (item.fb_id === req.session.fb.fb_id) {
 							fb.getComments(req, question.fb_post_id, function(err, c) {
 								if ((!err || !err.error) && c) {
-									prodItem.question.comments = c.comments.data;
+									console.log('COMMENTS: ', c);
+									prodItem.question.comments = c;
 									cb(null, item);
 								} else cb(err);
 							});
