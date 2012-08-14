@@ -6,14 +6,14 @@ div
         div.span3
           div.thumbnail
             img.thumb(src="#{item.img_src}", alt)
-          div.caption
+          div.caption: dl
           - if (item.parsed_data) {
-            h5 #{item.parsed_data.name}
+            dt #{item.parsed_data.name}
           - } else {
-            h5 #{item.title}
+            dt #{item.title}
           - }
-            p #{item.category}
-            p #{item.tags}
+              dd Category: #{item.category}
+              dd Tags: #{item.tags}
     - if (question.length > 0) {
       div.row
         div.span6

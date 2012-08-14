@@ -106,14 +106,8 @@ exports.v1 = {
 		console.log("EMBED: ",req.query);
 	},
 	domains_info: function(req, res) {
-		/* req.query
-			url: original url of page being viewed by user
-			callback: callback method for jsonp respons
-
-			response:
-			res.json({pinnable: true|false})
-		*/
-		console.log(req.url+" : "+req.query);
+		var info = scraper.getIdFromUrl(req.url);
+		console.log('INFO: ',info);
 		res.header('Content-Type', 'application/json');
 	  	res.header('Charset', 'utf-8');
 	  	res.send(req.query.callback + '({"pinnable": true})');
