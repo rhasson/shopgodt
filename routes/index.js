@@ -108,6 +108,7 @@ exports.v1 = {
 	domains_info: function(req, res) {
 		var info = scraper.getIdFromUrl(req.url);
 		console.log('INFO: ',info);
+		req.session.fb._info = info;
 		res.header('Content-Type', 'application/json');
 	  	res.header('Charset', 'utf-8');
 	  	res.send(req.query.callback + '({"pinnable": true})');
@@ -248,7 +249,27 @@ exports.v1 = {
 
 		scrape: function(req, res, next) {
 			cache.hget('pins', req.session.fb.fb_id, function(err, pin) {
-				var u  = '';
+				var info = req.session.fb._info,
+					u = '';
+
+				if (!err && pin !== null) {
+					u = JSON.parse(pin);
+					accessext.getProductDetails(info, function(e, data) {
+						if (!e) {
+							u.parsed_data = data;
+							var params = {
+								id: u.item_id,
+								body: u
+							};
+							items.update(params, function(err2, doc){
+								//if (u.parsed_data.reviews) delete u.parsed_data.reviews;
+								if (!err2 && doc.ok) cache.hset('pins', req.session.fb.fb_id, JSON.stringify(u));
+							});
+						} else console.log('PRODUCT API: ', e);
+					});
+				}
+
+/*				var u  = '';
 
 				if (!err && pin !== null) {
 					u = JSON.parse(pin);
@@ -286,8 +307,9 @@ exports.v1 = {
 						scraper.init();
 					}
 				}
+*/
 			});
-
+/*
 			function _scrape(url, cb) {
 				scraper.create(url, function(err, child) {
 					var data = null;
@@ -309,6 +331,7 @@ exports.v1 = {
 					}
 				});
 			}
+*/
 		}	
 	}, 
 
