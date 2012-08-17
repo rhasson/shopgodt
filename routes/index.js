@@ -208,16 +208,18 @@ exports.v1 = {
 				},
 				function(item, cb) {
 					console.log('ITEM1: ', item);
-					questions.get(item.question_id, function(err, question) {
-						if (!err) {
-							prodItem.question = question;
-							cb(null, question, item);
-						} else cb(err);
-					});
+					if (item.question_id) {
+						questions.get(item.question_id, function(err, question) {
+							if (!err) {
+								prodItem.question = question;
+								cb(null, question, item);
+							} else cb(err);
+						});
+					} else return cb(null, {}, item)
 				},
 				function(question, item, cb) {
 					console.log('ITEM2: ', item);
-					if (req.session.fb && Object.keys(req.session.fb).length > 0) {
+					if (req.session.fb && Object.keys(req.session.fb).length && Object.keys(question).length) {
 						if (item.fb_id === req.session.fb.fb_id) {
 							fb.getComments(req, question.fb_post_id, function(err, c) {
 								console.log('ITEM2, err: ', err, c);
@@ -229,7 +231,7 @@ exports.v1 = {
 							});
 						}
 					} else { 
-						prodItem.question.comments = [];
+						prodItem.question = { comments: [] };
 						cb(null, item);
 					}
 				},
