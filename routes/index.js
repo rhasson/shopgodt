@@ -50,6 +50,7 @@ exports.index = function(req, res){
 exports.auth = {
 	facebook_cb: function(req, res, next) {
 		if (!(req.session.fb instanceof Error)) {
+			console.log('CALLBACK: ', req.session.fb.profile_id);
 			if (!req.session.fb.profile_id) {
 				profiles.create(req.session.fb.user, function(err2, doc) {
 					if (!err2) {					
@@ -62,6 +63,12 @@ exports.auth = {
 						} else res.redirect('/');
 					}
 				});
+			} else {
+				if (req.session.return_uri) {
+					var u = req.session.return_uri
+					req.session.return_uri = null;
+					res.redirect(u);
+				} else res.redirect('/');
 			}
 		}
 	},
@@ -128,6 +135,7 @@ exports.v1 = {
 				is_video: req.query.is_video,
 				via: req.query.via || ''
 			};
+			console.log('IN HERE: ', req.session.fb.fb_id);
 			cache.hset('pins', req.session.fb.fb_id, JSON.stringify(l));
 			res.render('api_item_prev', {locals: { item: { media: l.media }	}, layout: false});
 			fb.getFriends(req);
@@ -199,6 +207,7 @@ exports.v1 = {
 					});
 				},
 				function(item, cb) {
+					console.log('ITEM1: ', item);
 					questions.get(item.question_id, function(err, question) {
 						if (!err) {
 							prodItem.question = question;
@@ -207,9 +216,11 @@ exports.v1 = {
 					});
 				},
 				function(question, item, cb) {
+					console.log('ITEM2: ', item);
 					if (req.session.fb && Object.keys(req.session.fb).length > 0) {
 						if (item.fb_id === req.session.fb.fb_id) {
 							fb.getComments(req, question.fb_post_id, function(err, c) {
+								console.log('ITEM2, err: ', err, c);
 								if ((!err || !err.error) && c) {
 									console.log('COMMENTS: ', c);
 									prodItem.question.comments = c;
@@ -223,6 +234,7 @@ exports.v1 = {
 					}
 				},
 				function(item, cb) {
+					console.log('ITEM3: ', arguments);
 					accessext.getPrices(item.parsed_data.name, function(err, prices) {
 						if (!err) {
 							prodItem.prices = prices;
