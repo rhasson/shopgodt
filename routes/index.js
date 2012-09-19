@@ -207,7 +207,6 @@ exports.v1 = {
 					});
 				},
 				function(item, cb) {
-					console.log('ITEM1: ', item);
 					if (item.question_id) {
 						questions.get(item.question_id, function(err, question) {
 							if (!err) {
@@ -218,11 +217,9 @@ exports.v1 = {
 					} else return cb(null, {}, item)
 				},
 				function(question, item, cb) {
-					console.log('ITEM2: ', item);
 					if (req.session.fb && Object.keys(req.session.fb).length && Object.keys(question).length) {
 						if (item.fb_id === req.session.fb.fb_id) {
 							fb.getComments(req, question.fb_post_id, function(err, c) {
-								console.log('ITEM2, err: ', err, c);
 								if ((!err || !err.error) && c) {
 									console.log('COMMENTS: ', c);
 									prodItem.question.comments = c;
@@ -236,7 +233,6 @@ exports.v1 = {
 					}
 				},
 				function(item, cb) {
-					console.log('ITEM3: ', arguments);
 					accessext.getPrices(item.parsed_data.name, function(err, prices) {
 						if (!err) {
 							prodItem.prices = prices;
